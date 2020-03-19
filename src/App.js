@@ -1,7 +1,14 @@
 import React from "react";
 import faker from "faker";
+import { Grid, IconButton, Typography, Collapse } from "@material-ui/core";
+import RefreshIcon from "@material-ui/icons/Refresh";
+import CollapseIcon from "@material-ui/icons/Remove";
+import ExpandIcon from "@material-ui/icons/Add";
+
+import moment from "moment";
 
 import Popup from "./components/Popup";
+import DateHandler from "./components/DateHandler";
 import { COLORS } from "./constants";
 
 import "./App.css";
@@ -10,14 +17,16 @@ const MAX_SERVICE = 5;
 const MAX_PROFILE = 5;
 const MAX_EMPLOYEE = 10;
 
-function getRandomNumber(max = 5) {
-  return Math.floor(Math.random() * max);
+function getRandomNumber(max = 5, min = 0) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
 function getColorHours() {
   let hour = 8;
   return new Array(15).fill(0).reduce(acc => {
-    acc[`color${hour++}h`] = COLORS[getRandomNumber()];
+    acc[`color${hour++}h`] = COLORS[getRandomNumber(5, 0)];
     return acc;
   }, {});
 }
@@ -32,7 +41,9 @@ function getEmployee() {
 function getProfile() {
   return {
     name: faker.commerce.department(),
-    employees: new Array(MAX_EMPLOYEE).fill(0).map(getEmployee),
+    employees: new Array(getRandomNumber(MAX_EMPLOYEE))
+      .fill(0)
+      .map(getEmployee),
     ...getColorHours()
   };
 }
@@ -40,82 +51,193 @@ function getProfile() {
 function getService() {
   return {
     name: faker.company.companyName(),
-    profiles: new Array(MAX_PROFILE).fill(0).map(getProfile)
+    profiles: new Array(getRandomNumber(MAX_PROFILE)).fill(0).map(getProfile)
   };
 }
 
 function getFakeData() {
-  return new Array(MAX_SERVICE).fill(0).map(getService);
+  return new Array(getRandomNumber(MAX_SERVICE)).fill(0).map(getService);
+}
+
+function ColorGrid({ record, profile, employee }) {
+  return (
+    <Grid container justify="space-between">
+      {Object.keys(record).map((key, i) =>
+        key.includes("color") ? (
+          <Grid item key={i} align="center">
+            <Popup color={record[key]} profile={profile} employee={employee} />
+          </Grid>
+        ) : null
+      )}
+    </Grid>
+  );
 }
 
 function Employee({ profile, employee }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center"
-      }}
-    >
-      <h5>{employee.name}</h5>
-      <div>
-        {Object.keys(employee).map((key, i) =>
-          key.includes("color") ? (
-            <Popup
-              key={i}
-              color={employee[key]}
+    <>
+      <Grid item xs={12}>
+        <Grid container alignItems="center">
+          <Grid item xs={2}></Grid>
+          <Grid item xs={3}>
+            <Typography title={employee.name} noWrap>
+              {employee.name}
+            </Typography>
+          </Grid>
+          <Grid item xs={7} align="center">
+            <ColorGrid
+              record={employee}
               employee={employee}
               profile={profile}
             />
-          ) : null
-        )}
-      </div>
-    </div>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 }
 
 function Profile({ profile }) {
+  const [checked, setChecked] = React.useState(true);
+  const onClick = React.useCallback(() => {
+    setChecked(checked => !checked);
+  }, []);
+
+  const Icon = checked ? CollapseIcon : ExpandIcon;
+
   const { employees = [] } = profile;
+
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center"
-        }}
-      >
-        <h4>Profile : {profile.name}</h4>
-        <div>
-          {Object.keys(profile).map((key, i) =>
-            key.includes("color") ? (
-              <Popup key={i} color={profile[key]} profile={profile} />
-            ) : null
-          )}
-        </div>
-      </div>
-      {employees.map((employee, i) => (
-        <Employee employee={employee} key={i} profile={profile} />
-      ))}
+      <Grid item xs={12}>
+        <Grid container alignItems="center">
+          <Grid item xs={1}></Grid>
+          <Grid item xs={4}>
+            <Grid container alignItems="center">
+              <Grid item>
+                <Typography title={profile.name} noWrap>
+                  {profile.name}
+                </Typography>
+              </Grid>
+              <Grid item>
+                <IconButton onClick={onClick} size="small">
+                  <Icon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid item xs={7} align="center">
+            <ColorGrid record={profile} profile={profile} />
+          </Grid>
+          <Grid item xs={12}>
+            <Collapse in={checked}>
+              {employees.map((employee, i) => (
+                <Employee employee={employee} key={i} profile={profile} />
+              ))}
+            </Collapse>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
+  );
+}
+
+function Service({ service }) {
+  const { profiles = [] } = service;
+  const [checked, setChecked] = React.useState(true);
+  const onClick = React.useCallback(() => {
+    setChecked(checked => !checked);
+  }, []);
+
+  const Icon = checked ? CollapseIcon : ExpandIcon;
+  return (
+    <>
+      <Grid item xs={6}>
+        <Grid container alignItems="center">
+          <Grid item>
+            <Typography title={service.name} noWrap>
+              {service.name}
+            </Typography>
+          </Grid>
+          <Grid item>
+            <IconButton onClick={onClick}>
+              <Icon />
+            </IconButton>
+          </Grid>
+        </Grid>
+      </Grid>
+      <Grid item xs={6}></Grid>
+      <Grid item xs={12}>
+        <Collapse in={checked}>
+          {profiles.map((profile, i) => {
+            return <Profile profile={profile} key={i} />;
+          })}
+        </Collapse>
+      </Grid>
     </>
   );
 }
 
 function View() {
-  const data = getFakeData();
+  const [data, setData] = React.useState(getFakeData());
+
+  const [date, setDate] = React.useState(
+    moment(new Date()).format("DD-MM-YYYY")
+  );
+
+  const onPrevious = React.useCallback(() => {
+    setDate(
+      moment(date, "DD-MM-YYYY")
+        .subtract(1, "days")
+        .format("DD-MM-YYYY")
+    );
+    setData(getFakeData());
+  }, [date]);
+
+  const onNext = React.useCallback(() => {
+    setDate(
+      moment(date, "DD-MM-YYYY")
+        .add(1, "days")
+        .format("DD-MM-YYYY")
+    );
+    setData(getFakeData());
+  }, [date]);
+
+  const onRefresh = React.useCallback(() => {
+    setData(getFakeData());
+  }, []);
 
   return (
-    <div>
-      {data.map((service, i) => {
-        const { profiles = [] } = service;
-        return (
-          <React.Fragment key={i}>
-            <h3>Service : {service.name}</h3>
-            {profiles.map((profile, i) => {
-              return <Profile profile={profile} key={i} />;
-            })}
-          </React.Fragment>
-        );
-      })}
-    </div>
+    <Grid container style={{ padding: 10 }} alignItems="center">
+      <Grid item xs={1}>
+        <IconButton onClick={onRefresh}>
+          <RefreshIcon />
+        </IconButton>
+      </Grid>
+      <Grid item xs={2}></Grid>
+      <Grid item xs={2}></Grid>
+      <Grid item xs={7}>
+        <Grid container>
+          <Grid item xs={12}>
+            <DateHandler date={date} onPrevious={onPrevious} onNext={onNext} />
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container justify="space-between">
+              {new Array(15).fill(0).map((_, i) => (
+                <Grid item key={i}>
+                  <div style={{ height: 10, width: 10, textAlign: "center" }}>
+                    <Typography>{i + 8}</Typography>
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+      {data.map((service, i) => (
+        <Service service={service} key={i} />
+      ))}
+    </Grid>
   );
 }
 
