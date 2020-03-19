@@ -1,11 +1,11 @@
 import React from "react";
 import faker from "faker";
+import moment from "moment";
+import { makeStyles } from "@material-ui/core/styles";
 import { Grid, IconButton, Typography, Collapse } from "@material-ui/core";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import CollapseIcon from "@material-ui/icons/Remove";
 import ExpandIcon from "@material-ui/icons/Add";
-
-import moment from "moment";
 
 import Popup from "./components/Popup";
 import DateHandler from "./components/DateHandler";
@@ -16,6 +16,12 @@ import "./App.css";
 const MAX_SERVICE = 5;
 const MAX_PROFILE = 5;
 const MAX_EMPLOYEE = 10;
+
+const useStyles = makeStyles(theme => ({
+  container: {
+    padding: 10
+  }
+}));
 
 function getRandomNumber(max = 5, min = 0) {
   min = Math.ceil(min);
@@ -144,9 +150,9 @@ function Profile({ profile }) {
 
 function Service({ service }) {
   const { profiles = [] } = service;
-  
+
   const [checked, setChecked] = React.useState(true);
-  
+
   const onClick = React.useCallback(() => {
     setChecked(checked => !checked);
   }, []);
@@ -226,8 +232,10 @@ function View() {
     setData(getFakeData());
   }, []);
 
+  const classes = useStyles();
+
   return (
-    <Grid container style={{ padding: 10 }} alignItems="center">
+    <Grid container className={classes.container} alignItems="center">
       <Header
         onRefresh={onRefresh}
         onNext={onNext}
