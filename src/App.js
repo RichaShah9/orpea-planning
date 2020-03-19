@@ -10,6 +10,7 @@ import ExpandIcon from "@material-ui/icons/Add";
 import Popup from "./components/Popup";
 import DateHandler from "./components/DateHandler";
 import { COLORS } from "./constants";
+import AxelorService from './service/axelor.rest';
 
 import "./App.css";
 
@@ -22,6 +23,14 @@ const useStyles = makeStyles(theme => ({
     padding: 10
   }
 }));
+
+function getColorSelectFields() {
+  const fields = [];
+  for(let i = 8; i <= 22; i++) {
+    fields.push(`h${i}ColorSelect`);
+  }
+  return fields;
+}
 
 function getRandomNumber(max = 5, min = 0) {
   min = Math.ceil(min);
@@ -77,6 +86,71 @@ function ColorGrid({ record, profile, employee }) {
       )}
     </Grid>
   );
+}
+
+function fetchData() {
+  
+  const profileService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.ProfileDay"});
+  const employeeService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.EmployeeDay"})
+  const profileFields = ["service", "employee", "dayDate", "profile", ...getColorSelectFields()];
+  const employeeFields = [...profileFields, "profile"];
+  const data = {
+    criteria: [
+      {fieldName: 'dayDate', operator: '=', value: moment().format("YYYY-MM-DD")},
+    ]
+  }
+  const serviceList = [];
+  const getServiceIndex = (serviceId) => {
+    return serviceList.findIndex(s => s.id === serviceId);
+  };
+  const getProfileIndex = (list, profileId) => {
+    return list.findIndex(p => p.id === profileId);
+  }
+
+  profileService.search({fields: profileFields, data}).then(res => {
+    employeeService.search({fields: employeeFields, data}).then(employeeResponse => {
+      const {data = []} = res;
+      const {data: employeeData = []} = employeeResponse;
+      const getProfile = (profile) => {
+        const _profile = data.find(p => p.profile.id === profile.id) || {};
+        const profileObject = {..._profile, name: profile.name, employees: []};
+        delete profileObject.profile;
+        delete profileObject.service;
+        return profileObject;
+      }
+
+      employeeData.forEach(employee => {
+        const serviceIndex = getServiceIndex(employee.service.id);
+        const service = serviceIndex === -1 
+        ? {name: employee.service.name, id: employee.service.id, profiles: []} 
+        : serviceList[serviceIndex];
+        
+        const profileIndex = getProfileIndex(service.profiles, employee.id);
+        const profile = profileIndex === -1 ? getProfile(employee.profile) : service.profiles[profileIndex];
+        const empObject = {
+          name: employee.employee.name,
+          ...employee,
+        };
+        delete empObject.employee;
+        delete empObject.profile;
+        delete empObject.service;
+        profile.employees.push({
+          ...empObject,
+        });
+        if(profileIndex !== -1) {
+          service.profiles[profileIndex] = {...profile};
+        } else {
+          service.profiles.push({...profile});
+        }
+        if(serviceIndex !== -1) {
+          serviceList[serviceIndex] = {...service}
+        } else {
+          serviceList.push({...service});
+        }
+      });
+      console.log('service', serviceList);
+    });
+  });
 }
 
 function Employee({ profile, employee }) {
@@ -250,6 +324,9 @@ function View() {
 }
 
 function App() {
+  React.useEffect(() => {
+    fetchData();
+  })
   return <View />;
 }
 
