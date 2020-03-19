@@ -144,7 +144,9 @@ function Profile({ profile }) {
 
 function Service({ service }) {
   const { profiles = [] } = service;
+  
   const [checked, setChecked] = React.useState(true);
+  
   const onClick = React.useCallback(() => {
     setChecked(checked => !checked);
   }, []);
@@ -173,6 +175,23 @@ function Service({ service }) {
             return <Profile profile={profile} key={i} />;
           })}
         </Collapse>
+      </Grid>
+    </>
+  );
+}
+
+function Header({ onRefresh, date, onPrevious, onNext }) {
+  return (
+    <>
+      <Grid item xs={1}>
+        <IconButton onClick={onRefresh}>
+          <RefreshIcon />
+        </IconButton>
+      </Grid>
+      <Grid item xs={2}></Grid>
+      <Grid item xs={2}></Grid>
+      <Grid item xs={7}>
+        <DateHandler date={date} onPrevious={onPrevious} onNext={onNext} />
       </Grid>
     </>
   );
@@ -209,31 +228,12 @@ function View() {
 
   return (
     <Grid container style={{ padding: 10 }} alignItems="center">
-      <Grid item xs={1}>
-        <IconButton onClick={onRefresh}>
-          <RefreshIcon />
-        </IconButton>
-      </Grid>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={7}>
-        <Grid container>
-          <Grid item xs={12}>
-            <DateHandler date={date} onPrevious={onPrevious} onNext={onNext} />
-          </Grid>
-          <Grid item xs={12}>
-            <Grid container justify="space-between">
-              {new Array(15).fill(0).map((_, i) => (
-                <Grid item key={i}>
-                  <div style={{ height: 10, width: 10, textAlign: "center" }}>
-                    <Typography>{i + 8}</Typography>
-                  </div>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+      <Header
+        onRefresh={onRefresh}
+        onNext={onNext}
+        onPrevious={onPrevious}
+        date={date}
+      />
       {data.map((service, i) => (
         <Service service={service} key={i} />
       ))}
