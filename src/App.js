@@ -17,6 +17,8 @@ import "./App.css";
 const MAX_SERVICE = 5;
 const MAX_PROFILE = 5;
 const MAX_EMPLOYEE = 10;
+const profileService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.ProfileDay"});
+const employeeService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.EmployeeDay"});
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -24,7 +26,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function getColorSelectFields() {
+function getColorFields() {
   const fields = [];
   for(let i = 8; i <= 22; i++) {
     fields.push(`h${i}ColorSelect`);
@@ -74,86 +76,23 @@ function getFakeData() {
   return new Array(getRandomNumber(MAX_SERVICE)).fill(0).map(getService);
 }
 
-function ColorGrid({ record, profile, employee }) {
+function ColorGrid({ record, profile, employee, onColorChange }) {
   return (
     <Grid container justify="space-between">
-      {Object.keys(record).map((key, i) =>
-        key.includes("color") ? (
+      {getColorFields().map((key, i) => (
           <Grid item key={i} align="center">
-            <Popup color={record[key]} profile={profile} employee={employee} />
+            <Popup color={record[key]} profile={profile} employee={employee} onColorChange={(value) => onColorChange(key, value)} />
           </Grid>
-        ) : null
-      )}
+        ))}
     </Grid>
   );
 }
 
-function fetchData() {
-  
-  const profileService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.ProfileDay"});
-  const employeeService = new AxelorService({model: "com.axelor.apps.orpea.planning.db.EmployeeDay"})
-  const profileFields = ["service", "employee", "dayDate", "profile", ...getColorSelectFields()];
-  const employeeFields = [...profileFields, "profile"];
-  const data = {
-    criteria: [
-      {fieldName: 'dayDate', operator: '=', value: moment().format("YYYY-MM-DD")},
-    ]
-  }
-  const serviceList = [];
-  const getServiceIndex = (serviceId) => {
-    return serviceList.findIndex(s => s.id === serviceId);
-  };
-  const getProfileIndex = (list, profileId) => {
-    return list.findIndex(p => p.id === profileId);
-  }
-
-  profileService.search({fields: profileFields, data}).then(res => {
-    employeeService.search({fields: employeeFields, data}).then(employeeResponse => {
-      const {data = []} = res;
-      const {data: employeeData = []} = employeeResponse;
-      const getProfile = (profile) => {
-        const _profile = data.find(p => p.profile.id === profile.id) || {};
-        const profileObject = {..._profile, name: profile.name, employees: []};
-        delete profileObject.profile;
-        delete profileObject.service;
-        return profileObject;
-      }
-
-      employeeData.forEach(employee => {
-        const serviceIndex = getServiceIndex(employee.service.id);
-        const service = serviceIndex === -1 
-        ? {name: employee.service.name, id: employee.service.id, profiles: []} 
-        : serviceList[serviceIndex];
-        
-        const profileIndex = getProfileIndex(service.profiles, employee.id);
-        const profile = profileIndex === -1 ? getProfile(employee.profile) : service.profiles[profileIndex];
-        const empObject = {
-          name: employee.employee.name,
-          ...employee,
-        };
-        delete empObject.employee;
-        delete empObject.profile;
-        delete empObject.service;
-        profile.employees.push({
-          ...empObject,
-        });
-        if(profileIndex !== -1) {
-          service.profiles[profileIndex] = {...profile};
-        } else {
-          service.profiles.push({...profile});
-        }
-        if(serviceIndex !== -1) {
-          serviceList[serviceIndex] = {...service}
-        } else {
-          serviceList.push({...service});
-        }
-      });
-      console.log('service', serviceList);
-    });
-  });
-}
-
 function Employee({ profile, employee }) {
+  const onEmployeeChange = React.useCallback((key, value) => {
+    employeeService.save({id: employee.id, version: employee.version, [key]: value});
+  }, [employee]);
+
   return (
     <>
       <Grid item xs={12}>
@@ -169,6 +108,7 @@ function Employee({ profile, employee }) {
               record={employee}
               employee={employee}
               profile={profile}
+              onColorChange={onEmployeeChange}
             />
           </Grid>
         </Grid>
@@ -186,6 +126,9 @@ function Profile({ profile }) {
   const Icon = checked ? CollapseIcon : ExpandIcon;
 
   const { employees = [] } = profile;
+  const onProfileChange = React.useCallback((key, value) => {
+    profileService.save({id: profile.id, version: profile.version, [key]: value});
+  }, [profile]);
 
   return (
     <>
@@ -207,7 +150,7 @@ function Profile({ profile }) {
             </Grid>
           </Grid>
           <Grid item xs={7} align="center">
-            <ColorGrid record={profile} profile={profile} />
+            <ColorGrid record={profile} profile={profile} onColorChange={onProfileChange} />
           </Grid>
           <Grid item xs={12}>
             <Collapse in={checked}>
@@ -278,11 +221,73 @@ function Header({ onRefresh, date, onPrevious, onNext }) {
 }
 
 function View() {
-  const [data, setData] = React.useState(getFakeData());
+  const [data, setData] = React.useState([]);
 
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
   );
+
+  const fetchData = React.useCallback(() => { 
+    const profileFields = ["service", "employee", "dayDate", "profile", ...getColorFields()];
+    const employeeFields = [...profileFields, "profile"];
+    const data = {
+      criteria: [
+        {fieldName: 'dayDate', operator: '=', value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")},
+      ]
+    }
+    const serviceList = [];
+    const getServiceIndex = (serviceId) => {
+      return serviceList.findIndex(s => s.id === serviceId);
+    };
+    const getProfileIndex = (list, profileId) => {
+      return list.findIndex(p => p.id === profileId);
+    }
+  
+    profileService.search({fields: profileFields, data}).then(res => {
+      employeeService.search({fields: employeeFields, data}).then(employeeResponse => {
+        const {data = []} = res;
+        const {data: employeeData = []} = employeeResponse;
+        const getProfile = (profile) => {
+          const _profile = data.find(p => p.profile.id === profile.id) || {};
+          const profileObject = {..._profile, name: profile.name, employees: []};
+          delete profileObject.profile;
+          delete profileObject.service;
+          return profileObject;
+        }
+  
+        employeeData.forEach(employee => {
+          const serviceIndex = getServiceIndex(employee.service.id);
+          const service = serviceIndex === -1 
+          ? {name: employee.service.name, id: employee.service.id, profiles: []} 
+          : serviceList[serviceIndex];
+          
+          const profileIndex = getProfileIndex(service.profiles, employee.id);
+          const profile = profileIndex === -1 ? getProfile(employee.profile) : service.profiles[profileIndex];
+          const empObject = {
+            name: employee.employee.name,
+            ...employee,
+          };
+          delete empObject.employee;
+          delete empObject.profile;
+          delete empObject.service;
+          profile.employees.push({
+            ...empObject,
+          });
+          if(profileIndex !== -1) {
+            service.profiles[profileIndex] = {...profile};
+          } else {
+            service.profiles.push({...profile});
+          }
+          if(serviceIndex !== -1) {
+            serviceList[serviceIndex] = {...service}
+          } else {
+            serviceList.push({...service});
+          }
+        });
+        setData(serviceList);
+      });
+    });
+  }, [date])
 
   const onPrevious = React.useCallback(() => {
     setDate(
@@ -290,7 +295,6 @@ function View() {
         .subtract(1, "days")
         .format("DD-MM-YYYY")
     );
-    setData(getFakeData());
   }, [date]);
 
   const onNext = React.useCallback(() => {
@@ -303,8 +307,12 @@ function View() {
   }, [date]);
 
   const onRefresh = React.useCallback(() => {
-    setData(getFakeData());
-  }, []);
+    fetchData();
+  }, [fetchData]);
+
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData])
 
   const classes = useStyles();
 
@@ -324,9 +332,6 @@ function View() {
 }
 
 function App() {
-  React.useEffect(() => {
-    fetchData();
-  })
   return <View />;
 }
 
