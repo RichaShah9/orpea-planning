@@ -9,7 +9,8 @@ const useStyles = makeStyles(theme => ({
     height: 20,
     width: 20,
     display: "inline-block",
-    margin: 1
+    margin: 1,
+    boxSizing: "border-box"
   },
   popupContent: {
     padding: 20,
@@ -74,7 +75,9 @@ function Popup({
         onClick={handleClick}
         className={classes.popup}
         style={{
-          backgroundColor: color
+          backgroundColor: color,
+
+          border: open ? "2px solid black" : "none"
         }}
       />
       <Popover
