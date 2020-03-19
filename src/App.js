@@ -64,16 +64,20 @@ function ColorGrid({ record, profile, employee, onColorChange }) {
   );
 }
 
-function Employee({ profile, employee }) {
+function Employee({ profile, employee, onChange }) {
   const onEmployeeChange = React.useCallback(
     (key, value) => {
       employeeService.save({
         id: employee.id,
         version: employee.version,
         [key]: value
+      }).then(res => {
+        if(res.data) {
+          onChange({employeeId: employee.id, version: res.data[0].version, key, value});
+        }
       });
     },
-    [employee]
+    [employee, onChange]
   );
 
   return (
@@ -100,7 +104,7 @@ function Employee({ profile, employee }) {
   );
 }
 
-function Profile({ profile }) {
+function Profile({ profile, onChange }) {
   const [checked, setChecked] = React.useState(true);
   const onClick = React.useCallback(() => {
     setChecked(checked => !checked);
@@ -116,9 +120,13 @@ function Profile({ profile }) {
         id: profile.id,
         version: profile.version,
         [key]: value
+      }).then(res => {
+        if(res.data) {
+          onChange({version: res.data[0].version, profileId: profile.id, key, value});
+        }
       });
     },
-    [profile]
+    [profile, onChange]
   );
 
   return (
@@ -152,7 +160,12 @@ function Profile({ profile }) {
           <Grid item xs={12}>
             <Collapse in={checked}>
               {employees.map((employee, i) => (
-                <Employee employee={employee} key={i} profile={profile} />
+                <Employee 
+                  employee={employee} 
+                  key={i} 
+                  profile={profile} 
+                  onChange={(params) => onChange({...params, profileId: profile.id})} 
+                />
               ))}
             </Collapse>
           </Grid>
@@ -162,7 +175,7 @@ function Profile({ profile }) {
   );
 }
 
-function Service({ service }) {
+function Service({ service, onChange }) {
   const { profiles = [] } = service;
 
   const [checked, setChecked] = React.useState(true);
@@ -200,7 +213,7 @@ function Service({ service }) {
       <Grid item xs={12}>
         <Collapse in={checked}>
           {profiles.map((profile, i) => {
-            return <Profile profile={profile} key={i} />;
+            return <Profile profile={profile} key={i} onChange={(params) => onChange({serviceId: service.id, ...params})} />;
           })}
         </Collapse>
       </Grid>
@@ -343,6 +356,25 @@ function View() {
     fetchData();
   }, [fetchData]);
 
+  const onChange = React.useCallback((record) => {
+    setData(data => {
+      const serviceIndex = data.findIndex(s => s.id === record.serviceId);
+      const service = data[serviceIndex];
+      const profileIndex = service.profiles.findIndex(p => p.id === record.profileId);
+      const profile = service.profiles[profileIndex];
+      if(record.employeeId) {
+        const employeeIndex = profile.employees.findIndex(p => p.id === record.employeeId);
+        profile.employees[employeeIndex] = {...profile.employees[employeeIndex], version: record.version, [record.key]: record.value};
+      } else {
+        profile[record.key] = record.value;
+        profile['version'] = record.version;
+      }
+      service.profiles[profileIndex] = {...profile};
+      data[serviceIndex] = {...service};
+      return [...data];
+    });
+  }, [])
+
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -361,7 +393,7 @@ function View() {
       <Grid className={classes.treeView}>
         {data.map((service, i) => (
           <React.Fragment key={i}>
-            <Service service={service} key={i} />
+            <Service service={service} key={i} onChange={onChange} />
             <Divider style={{ width: "100%", marginTop: 25 }} />
           </React.Fragment>
         ))}
