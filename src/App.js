@@ -2,18 +2,26 @@ import React from "react";
 import moment from "moment";
 import { makeStyles } from "@material-ui/core/styles";
 import {
-  Grid,
   IconButton,
   Typography,
-  Collapse,
   Button,
-  Divider
+  Table,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableBody,
+  CircularProgress
 } from "@material-ui/core";
-import RefreshIcon from "@material-ui/icons/Refresh";
-import { AddCircle, RemoveCircle } from "@material-ui/icons";
+import {
+  AddCircle,
+  RemoveCircle,
+  Refresh as RefreshIcon,
+  NavigateBefore as PreviousIcon,
+  NavigateNext as NextIcon
+} from "@material-ui/icons";
+import cs from "classnames";
 
 import Popup from "./components/Popup";
-import DateHandler from "./components/DateHandler";
 import AxelorService from "./service/axelor.rest";
 
 import "./App.css";
@@ -36,6 +44,9 @@ const useStyles = makeStyles(theme => ({
     width: "100%",
     height: "calc(100% - 150px)",
     overflow: "overlay"
+  },
+  hidden: {
+    display: "none"
   }
 }));
 
@@ -47,210 +58,165 @@ function getColorFields() {
   return fields;
 }
 
-function ColorGrid({ record, profile, employee, onColorChange }) {
-  return (
-    <Grid container justify="space-between">
-      {getColorFields().map((key, i) => (
-        <Grid item key={i} align="center">
-          <Popup
-            color={record[key]}
-            profile={profile}
-            employee={employee}
-            onColorChange={value => onColorChange(key, value)}
-          />
-        </Grid>
-      ))}
-    </Grid>
-  );
-}
-
-function Employee({ profile, employee, onChange }) {
+function TableEmployee({ employee, profile, hidden, onChange }) {
+  const classes = useStyles();
   const onEmployeeChange = React.useCallback(
     (key, value) => {
-      employeeService.save({
-        id: employee.id,
-        version: employee.version,
-        [key]: value
-      }).then(res => {
-        if(res.data) {
-          onChange({employeeId: employee.id, version: res.data[0].version, key, value});
-        }
-      });
+      console.log("key", key, value);
+      employeeService
+        .save({
+          id: employee.id,
+          version: employee.version,
+          [key]: value
+        })
+        .then(res => {
+          if (res.data) {
+            onChange({
+              employeeId: employee.id,
+              version: res.data[0].version,
+              key,
+              value
+            });
+          }
+        });
     },
     [employee, onChange]
   );
-
   return (
     <>
-      <Grid item xs={12}>
-        <Grid container alignItems="center">
-          <Grid item xs={2}></Grid>
-          <Grid item xs={3}>
-            <Typography title={employee.name} noWrap style={{ color: "gray" }}>
-              {employee.name}
-            </Typography>
-          </Grid>
-          <Grid item xs={7} align="center">
-            <ColorGrid
-              record={employee}
-              employee={employee}
-              profile={profile}
-              onColorChange={onEmployeeChange}
-            />
-          </Grid>
-        </Grid>
-      </Grid>
+      <TableRow className={cs({ [classes.hidden]: hidden })}>
+        <TableCell colSpan={2}></TableCell>
+        <TableCell>
+          <Typography>{employee.name}</Typography>
+        </TableCell>
+
+        {getColorFields().map((key, i) => (
+          <Popup
+            key={i}
+            color={employee[key]}
+            profile={profile}
+            employee={employee}
+            onColorChange={color => onEmployeeChange(key, color)}
+          />
+        ))}
+        <TableCell />
+      </TableRow>
     </>
   );
 }
 
-function Profile({ profile, onChange }) {
-  const [checked, setChecked] = React.useState(true);
+function TableProfile({ profile, hidden, onChange }) {
+  const [collapsed, setCollapsed] = React.useState(false);
+
   const onClick = React.useCallback(() => {
-    setChecked(checked => !checked);
+    setCollapsed(c => !c);
   }, []);
 
-  const Icon = checked ? RemoveCircle : AddCircle;
-  const color = checked ? "green" : "#2f4050";
+  const Icon = collapsed ? AddCircle : RemoveCircle;
+  const color = collapsed ? "green" : "#2f4050";
 
   const { employees = [] } = profile;
   const onProfileChange = React.useCallback(
     (key, value) => {
-      profileService.save({
-        id: profile.id,
-        version: profile.version,
-        [key]: value
-      }).then(res => {
-        if(res.data) {
-          onChange({version: res.data[0].version, profileId: profile.id, key, value});
-        }
-      });
+      profileService
+        .save({
+          id: profile.id,
+          version: profile.version,
+          [key]: value
+        })
+        .then(res => {
+          if (res.data) {
+            onChange({
+              version: res.data[0].version,
+              profileId: profile.id,
+              key,
+              value
+            });
+          }
+        });
     },
     [profile, onChange]
   );
 
+  const classes = useStyles();
   return (
     <>
-      <Grid item xs={12}>
-        <Grid container alignItems="center">
-          <Grid item xs={1}></Grid>
-          <Grid item xs={4}>
-            <Grid container alignItems="center">
-              <Grid item>
-                <Typography title={profile.name} noWrap>
-                  {profile.name}
-                </Typography>
-              </Grid>
-              {employees.length > 0 && (
-                <Grid item>
-                  <IconButton onClick={onClick} size="small">
-                    <Icon fontSize="small" style={{ color }} />
-                  </IconButton>
-                </Grid>
-              )}
-            </Grid>
-          </Grid>
-          <Grid item xs={7} align="center">
-            <ColorGrid
-              record={profile}
-              profile={profile}
-              onColorChange={onProfileChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Collapse in={checked}>
-              {employees.map((employee, i) => (
-                <Employee 
-                  employee={employee} 
-                  key={i} 
-                  profile={profile} 
-                  onChange={(params) => onChange({...params, profileId: profile.id})} 
-                />
-              ))}
-            </Collapse>
-          </Grid>
-        </Grid>
-      </Grid>
+      <TableRow className={cs({ [classes.hidden]: hidden })}>
+        <TableCell></TableCell>
+        <TableCell onClick={onClick} colSpan={2} style={{ cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Typography>{profile.name}</Typography>&nbsp;
+            <Icon style={{ fontSize: "1rem", color }} />
+          </div>
+        </TableCell>
+
+        {getColorFields().map((key, i) => (
+          <Popup
+            key={i}
+            color={profile[key]}
+            profile={profile}
+            onColorChange={color => onProfileChange(key, color)}
+          />
+        ))}
+        <TableCell />
+      </TableRow>
+      {employees.map((employee, i) => (
+        <TableEmployee
+          employee={employee}
+          profile={profile}
+          key={i}
+          hidden={collapsed || hidden}
+          onChange={params => onChange({ ...params, profileId: profile.id })}
+        />
+      ))}
     </>
   );
 }
 
-function Service({ service, onChange }) {
+function TableService({ service, onChange }) {
+  const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
 
-  const [checked, setChecked] = React.useState(true);
-
   const onClick = React.useCallback(() => {
-    setChecked(checked => !checked);
+    setCollapsed(c => !c);
   }, []);
 
-  const Icon = checked ? RemoveCircle : AddCircle;
-  const color = checked ? "green" : "#2f4050";
+  const Icon = collapsed ? AddCircle : RemoveCircle;
+  const color = collapsed ? "green" : "#2f4050";
 
   return (
     <>
-      <Grid item xs={6} style={{ paddingTop: profiles.length === 0 ? 25 : 0 }}>
-        <Grid container alignItems="center">
-          <Grid item>
-            <Typography
-              title={service.name}
-              noWrap
-              style={{ fontWeight: "bold" }}
-            >
-              {service.name}
-            </Typography>
-          </Grid>
-          {profiles.length > 0 && (
-            <Grid item>
-              <IconButton size="small" onClick={onClick}>
-                <Icon style={{ color }} fontSize="small" />
-              </IconButton>
-            </Grid>
-          )}
-        </Grid>
-      </Grid>
-      <Grid item xs={6}></Grid>
-      <Grid item xs={12}>
-        <Collapse in={checked}>
-          {profiles.map((profile, i) => {
-            return <Profile profile={profile} key={i} onChange={(params) => onChange({serviceId: service.id, ...params})} />;
-          })}
-        </Collapse>
-      </Grid>
+      <TableRow>
+        <TableCell onClick={onClick} style={{ cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Typography>{service.name}</Typography>&nbsp;
+            <Icon style={{ fontSize: "1rem", color }} />
+          </div>
+        </TableCell>
+        <TableCell colSpan={18} />
+      </TableRow>
+      {profiles.map((profile, i) => (
+        <TableProfile
+          onChange={params => onChange({ serviceId: service.id, ...params })}
+          profile={profile}
+          key={i}
+          hidden={collapsed}
+        />
+      ))}
     </>
   );
 }
 
-function Header({ onRefresh, date, onPrevious, onNext }) {
-  return (
-    <>
-      <Grid item xs={1}>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={onRefresh}
-          style={{ textTransform: "none" }}
-        >
-          Refresh
-        </Button>
-      </Grid>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={7}>
-        <DateHandler date={date} onPrevious={onPrevious} onNext={onNext} />
-      </Grid>
-    </>
-  );
-}
-
-function View() {
+function TableView() {
   const [data, setData] = React.useState([]);
 
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
   );
+  const [isLoading, setLoading] = React.useState(false);
 
   const fetchData = React.useCallback(() => {
+    setLoading(true);
     const profileFields = [
       "service",
       "employee",
@@ -332,6 +298,7 @@ function View() {
             }
           });
           setData(serviceList);
+          setLoading(false);
         });
     });
   }, [date]);
@@ -356,54 +323,124 @@ function View() {
     fetchData();
   }, [fetchData]);
 
-  const onChange = React.useCallback((record) => {
+  const onChange = React.useCallback(record => {
     setData(data => {
       const serviceIndex = data.findIndex(s => s.id === record.serviceId);
       const service = data[serviceIndex];
-      const profileIndex = service.profiles.findIndex(p => p.id === record.profileId);
+      const profileIndex = service.profiles.findIndex(
+        p => p.id === record.profileId
+      );
       const profile = service.profiles[profileIndex];
-      if(record.employeeId) {
-        const employeeIndex = profile.employees.findIndex(p => p.id === record.employeeId);
-        profile.employees[employeeIndex] = {...profile.employees[employeeIndex], version: record.version, [record.key]: record.value};
+      if (record.employeeId) {
+        const employeeIndex = profile.employees.findIndex(
+          p => p.id === record.employeeId
+        );
+        profile.employees[employeeIndex] = {
+          ...profile.employees[employeeIndex],
+          version: record.version,
+          [record.key]: record.value
+        };
       } else {
         profile[record.key] = record.value;
-        profile['version'] = record.version;
+        profile["version"] = record.version;
       }
-      service.profiles[profileIndex] = {...profile};
-      data[serviceIndex] = {...service};
+      service.profiles[profileIndex] = { ...profile };
+      data[serviceIndex] = { ...service };
       return [...data];
     });
-  }, [])
+  }, []);
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const classes = useStyles();
-
   return (
-    <Grid container className={classes.container} alignItems="center">
-      <Header
-        onRefresh={onRefresh}
-        onNext={onNext}
-        onPrevious={onPrevious}
-        date={date}
-      />
-      <Divider style={{ width: "100%" }} />
-      <Grid className={classes.treeView}>
-        {data.map((service, i) => (
-          <React.Fragment key={i}>
-            <Service service={service} key={i} onChange={onChange} />
-            <Divider style={{ width: "100%", marginTop: 25 }} />
-          </React.Fragment>
-        ))}
-      </Grid>
-    </Grid>
+    <Table border="1" style={{ width: "100%" }} size="small">
+      <TableHead>
+        <TableRow>
+          <TableCell width="10%" align="center">
+            <Button
+              size="small"
+              variant="outlined"
+              color="default"
+              startIcon={<RefreshIcon />}
+              onClick={onRefresh}
+            >
+              Refresh
+            </Button>
+          </TableCell>
+          <TableCell width="10%"></TableCell>
+          <TableCell width="10%"></TableCell>
+          <TableCell colSpan={4}></TableCell>
+          <TableCell>
+            <IconButton
+              size="small"
+              style={{ padding: 0 }}
+              onClick={onPrevious}
+            >
+              <PreviousIcon fontSize="small" />
+            </IconButton>
+          </TableCell>
+          <TableCell colSpan={5}>
+            <Typography align="center">
+              <b>{date}</b>
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
+              <NextIcon fontSize="small" />
+            </IconButton>
+          </TableCell>
+          <TableCell colSpan={4}></TableCell>
+          <TableCell width="20%"></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell colSpan={3}></TableCell>
+          {new Array(15).fill(0).map((_, i) => (
+            <TableCell key={i} width="3.125%">
+              <Typography>
+                <b>{i + 8}</b>
+              </Typography>
+            </TableCell>
+          ))}
+          <TableCell></TableCell>
+        </TableRow>
+      </TableHead>
+      {!isLoading ? (
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={2}></TableCell>
+            <TableCell>
+              <Typography>Percentage</Typography>
+            </TableCell>
+            {new Array(15).fill(0).map((_, i) => (
+              <TableCell key={i}></TableCell>
+            ))}
+            <TableCell />
+          </TableRow>
+          {data.map((serivce, i) => (
+            <TableService service={serivce} key={i} onChange={onChange} />
+          ))}
+        </TableBody>
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            alignSelf: "center",
+            position: "absolute",
+            textAlign: "center",
+            padding: 25
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
+    </Table>
   );
 }
 
 function App() {
-  return <View />;
+  return <TableView />;
 }
 
 export default App;
