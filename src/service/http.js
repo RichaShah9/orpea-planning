@@ -27,7 +27,7 @@ function readCookie(name) {
 
 class service {
 	constructor(props) {
-		this.baseURL = process.env.NODE_ENV === 'production' ? '../' : '/axelor-erp';
+		this.baseURL = process.env.NODE_ENV === 'production' ? '../../' : '/axelor-erp';
 	}
 
 	request(url, method, data) {
