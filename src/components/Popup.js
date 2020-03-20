@@ -71,6 +71,10 @@ function Popup({
     [onColorChangeProp]
   );
 
+  React.useEffect(() => {
+    setColor(colorProp);
+  }, [colorProp])
+
   const classes = useStyles();
   return (
     <>
