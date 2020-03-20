@@ -28,9 +28,11 @@ function PopupContent({
   const classes = useStyles();
   return (
     <div className={classes.popupContent}>
-      <Typography gutterBottom>
-        <b>Employee :</b> {employee.name}
-      </Typography>
+      {employee && employee.name && (
+        <Typography gutterBottom>
+          <b>Employee :</b> {employee.name}
+        </Typography>
+      )}
       <Typography gutterBottom>
         <b>Profile :</b> {profile.name}
       </Typography>
