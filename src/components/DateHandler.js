@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 import { IconButton, Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -44,7 +45,9 @@ function DateHandler({ onPrevious = () => {}, onNext = () => {}, date }) {
         </IconButton>
       </Grid>
       <Grid item xs={10} align="center">
-        <Typography className={classes.typography}>{date}</Typography>
+        <Typography className={classes.typography}>
+          {moment(date, "DD-MM-YYYY").format("DD/MM/YYYY")}
+        </Typography>
       </Grid>
       <Grid item xs={1}>
         <IconButton onClick={onNext} className={classes.button}>
