@@ -1,5 +1,5 @@
 import React from "react";
-import { Popover, Typography } from "@material-ui/core";
+import { Popover, Typography, Tooltip, TableCell } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import ColorPicker from "./ColorPicker";
@@ -75,19 +75,16 @@ function Popup({
 
   React.useEffect(() => {
     setColor(colorProp);
-  }, [colorProp])
+  }, [colorProp]);
 
-  const classes = useStyles();
+  let tooltipTitle = "";
+  if (profile) tooltipTitle += `Profile: ${profile.name}; `;
+  if (employee) tooltipTitle += `Employee: ${employee.name}`;
   return (
     <>
-      <div
-        onClick={handleClick}
-        className={classes.popup}
-        style={{
-          backgroundColor: color,
-          border: open ? "2px solid black" : "1px solid lightgray"
-        }}
-      />
+      <Tooltip arrow title={tooltipTitle}>
+        <TableCell onClick={handleClick} style={{ backgroundColor: color }} />
+      </Tooltip>
       <Popover
         open={open}
         anchorEl={anchorEl}
