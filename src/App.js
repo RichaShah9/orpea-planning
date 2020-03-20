@@ -11,7 +11,7 @@ import {
   Divider
 } from "@material-ui/core";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import { ArrowRight, ArrowDropDown } from "@material-ui/icons";
+import { AddCircle, RemoveCircle } from "@material-ui/icons";
 
 import Popup from "./components/Popup";
 import DateHandler from "./components/DateHandler";
@@ -153,7 +153,7 @@ function Profile({ profile }) {
     setChecked(checked => !checked);
   }, []);
 
-  const Icon = checked ? ArrowDropDown : ArrowRight;
+  const Icon = checked ? RemoveCircle : AddCircle;
   const color = checked ? "green" : "#2f4050";
 
   const { employees = [] } = profile;
@@ -183,7 +183,7 @@ function Profile({ profile }) {
               {employees.length > 0 && (
                 <Grid item>
                   <IconButton onClick={onClick} size="small">
-                    <Icon style={{ color }} />
+                    <Icon fontSize="small" style={{ color }} />
                   </IconButton>
                 </Grid>
               )}
@@ -218,7 +218,7 @@ function Service({ service }) {
     setChecked(checked => !checked);
   }, []);
 
-  const Icon = checked ? ArrowDropDown : ArrowRight;
+  const Icon = checked ? RemoveCircle : AddCircle;
   const color = checked ? "green" : "#2f4050";
 
   return (
@@ -236,8 +236,8 @@ function Service({ service }) {
           </Grid>
           {profiles.length > 0 && (
             <Grid item>
-              <IconButton onClick={onClick}>
-                <Icon fontSize="large" style={{ color }} />
+              <IconButton size="small" onClick={onClick}>
+                <Icon style={{ color }} fontSize="small" />
               </IconButton>
             </Grid>
           )}
