@@ -21,17 +21,10 @@ import {
 } from "@material-ui/icons";
 import cs from "classnames";
 
-import { COLORS } from "./constants"; // For static view only
-
 import Popup from "./components/Popup";
 import AxelorService from "./service/axelor.rest";
 
 import "./App.css";
-
-function getRandomNumber(max = 5) {
-  // For static view only
-  return Math.floor(Math.random() * max);
-}
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
   <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "2px 0px" }}>
@@ -39,11 +32,11 @@ const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
   </MuiTableCell>
 ));
 
-const profileService = new AxelorService({
-  model: "com.axelor.apps.orpea.planning.db.ProfileDay"
+const profileMonthService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.ProfileMonth"
 });
-const employeeService = new AxelorService({
-  model: "com.axelor.apps.orpea.planning.db.EmployeeDay"
+const employeeMonthService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.EmployeeMonth"
 });
 
 const useStyles = makeStyles(theme => ({
@@ -63,13 +56,17 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function getColorFields(days = 31) {
+function getColorFields(days = 31, text='ColorSelect') {
   const fields = [];
   for (let i = 0; i < days; i++) {
     // Changes are for static view only, please change for API
-    fields.push(`h${i}ColorSelect`);
+    fields.push(`d${i}${text}`);
   }
   return fields;
+}
+
+function getText(day) {
+  return `d${day}Text`;
 }
 
 function TableEmployee({
@@ -83,8 +80,7 @@ function TableEmployee({
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
     (key, value) => {
-      console.log("key", key, value);
-      employeeService
+      employeeMonthService
         .save({
           id: employee.id,
           version: employee.version,
@@ -128,8 +124,8 @@ function TableEmployee({
             }
             TableCell={TableCell} // Without Padding Cell
             key={i}
-            color={COLORS[getRandomNumber()]} // Changes are for static view only
-            // color={employee[key]}
+            color={employee[key]}
+            text={employee[getText(i)]}
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
@@ -154,7 +150,7 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
   const { employees = [] } = profile;
   const onProfileChange = React.useCallback(
     (key, value) => {
-      profileService
+      profileMonthService
         .save({
           id: profile.id,
           version: profile.version,
@@ -206,9 +202,8 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
             }
             TableCell={TableCell} // Without padding cell
             key={i}
-            color={COLORS[getRandomNumber()]} // Changes are for static view only
-            // color={profile[key]}
-            text={i % 10 === 0 ? "DRX" : ""} // Changes are for static view only
+            color={profile[key]}
+            text={profile[getText(i)]}
             profile={profile}
             onColorChange={color => onProfileChange(key, color)}
           />
@@ -285,47 +280,13 @@ const MONTH_FORMAT = "MMM YYYY";
 
 const FR_DAYS_OF_WEEK = ["D", "L", "M", "M", "J", "V", "S"]; // Starts at sunday
 
-const DEMO_DATA = [
-  {
-    name: "Service1",
-    profiles: [
-      { name: "Profile1", employees: [{ name: "Employee1" }] },
-      {
-        name: "Profile2",
-        employees: [
-          { name: "Employee3" },
-          { name: "Employee4" },
-          { name: "Employee5" }
-        ]
-      }
-    ]
-  },
-  {
-    name: "Service2",
-    profiles: [
-      { name: "Profile1", employees: [{ name: "Employee1" }] },
-      {
-        name: "Profile2",
-        employees: [
-          { name: "Employee3" },
-          { name: "Employee4" },
-          { name: "Employee5" }
-        ]
-      }
-    ]
-  }
-];
-
 function MonthView() {
   const [month, setMonth] = React.useState(
     moment(new Date()).format(MONTH_FORMAT)
   );
 
-  const [data, setData] = React.useState(DEMO_DATA);
+  const [data, setData] = React.useState([]);
 
-  const [date, setDate] = React.useState(
-    moment(new Date()).format("DD-MM-YYYY")
-  );
   const [isLoading, setLoading] = React.useState(false);
 
   const getDaysInMonth = React.useCallback(month => {
@@ -380,22 +341,30 @@ function MonthView() {
   }, []);
 
   const fetchData = React.useCallback(() => {
-    /*
+    
     setLoading(true);
+    const days = getDaysInMonth(month);
     const profileFields = [
       "service",
       "employee",
-      "dayDate",
+      "monthPeriod",
       "profile",
-      ...getColorFields()
+      ...getColorFields(days),
+      ...getColorFields(days, "Text"),
     ];
     const employeeFields = [...profileFields, "profile"];
+    const _month = moment(month, MONTH_FORMAT);
     const data = {
       criteria: [
         {
-          fieldName: "dayDate",
+          fieldName: "monthPeriod.fromDate",
           operator: "=",
-          value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+          value: _month.startOf('month').format("YYYY-MM-DD")
+        },
+        {
+          fieldName: "monthPeriod.toDate",
+          operator: "=",
+          value: _month.endOf('month').format("YYYY-MM-DD")
         }
       ]
     };
@@ -407,8 +376,8 @@ function MonthView() {
       return list.findIndex(p => p.id === profileId);
     };
 
-    profileService.search({ fields: profileFields, data }).then(res => {
-      employeeService
+    profileMonthService.search({ fields: profileFields, data }).then(res => {
+      employeeMonthService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
           const { data = [] } = res;
@@ -465,8 +434,8 @@ function MonthView() {
           setData(serviceList);
           setLoading(false);
         });
-    });*/
-  }, [date]);
+    });
+  }, [month, getDaysInMonth]);
 
   const onPrevious = React.useCallback(() => {
     setMonth(
@@ -495,7 +464,7 @@ function MonthView() {
   const { weekColSpans, daySpans } = getWeekColSpans(initials, days);
 
   const onChange = React.useCallback(record => {
-    /*setData(data => {
+    setData(data => {
       const serviceIndex = data.findIndex(s => s.id === record.serviceId);
       const service = data[serviceIndex];
       const profileIndex = service.profiles.findIndex(
@@ -518,7 +487,7 @@ function MonthView() {
       service.profiles[profileIndex] = { ...profile };
       data[serviceIndex] = { ...service };
       return [...data];
-    });*/
+    });
   }, []);
 
   React.useEffect(() => {
