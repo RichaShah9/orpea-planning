@@ -50,19 +50,19 @@ const useStyles = makeStyles(theme => ({
   },
   tableCell: {
     padding: "6px 16px",
-    textAlign: "center",
+    textAlign: "center"
   },
   inputCell: {
-    padding: 0,
+    padding: 0
   },
   inputBox: {
-    width: '100%',
-    border: 'none',
-    '&:focus': {
-      border: 'none',
+    width: "100%",
+    border: "none",
+    "&:focus": {
+      border: "none"
     }
-  },
- }));
+  }
+}));
 
 function getColorFields() {
   const fields = [];
@@ -226,7 +226,7 @@ function TableService({ service, onChange }) {
         <TableCell colSpan={2} className={classes.inputCell}>
           <input className={classes.inputBox} />
         </TableCell>
-        <TableCell colSpan={14} />
+        <TableCell colSpan={15} />
       </TableRow>
       {profiles.map((profile, i) => (
         <TableProfile
@@ -383,38 +383,51 @@ function TableView() {
     });
   }, []);
 
-  const fetchColumn = React.useCallback((key) => {
-    const _data = {
-      criteria: [
-        {
-          fieldName: "dayDate",
-          operator: "=",
-          value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
-        }
-      ]
-    };
-    profileService.search({fields: [key, 'service', 'employee'], data: _data}).then(res => {
-      employeeService.search({fields: [key, 'service', 'profile'], data: _data}).then(employeeResponse => {
-        const profileData = res.data || [];
-        const employeeData = employeeResponse.data || [];
-        setData(data => {
-          profileData.forEach(profile => {
-            data.forEach(service => {
-              const profileIndex  = service.profiles.findIndex(p => p.id === profile.id);
-              service.profiles[profileIndex][key] = profile[key];
-              service.profiles[profileIndex].employees.forEach((emp, i) => {
-                const employee = employeeData.find(e => e.id === emp.id);
-                if(employee.id) {
-                  emp[key] = employee[key];
-                }  
+  const fetchColumn = React.useCallback(
+    key => {
+      const _data = {
+        criteria: [
+          {
+            fieldName: "dayDate",
+            operator: "=",
+            value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+          }
+        ]
+      };
+      profileService
+        .search({ fields: [key, "service", "employee"], data: _data })
+        .then(res => {
+          employeeService
+            .search({ fields: [key, "service", "profile"], data: _data })
+            .then(employeeResponse => {
+              const profileData = res.data || [];
+              const employeeData = employeeResponse.data || [];
+              setData(data => {
+                profileData.forEach(profile => {
+                  data.forEach(service => {
+                    const profileIndex = service.profiles.findIndex(
+                      p => p.id === profile.id
+                    );
+                    service.profiles[profileIndex][key] = profile[key];
+                    service.profiles[profileIndex].employees.forEach(
+                      (emp, i) => {
+                        const employee = employeeData.find(
+                          e => e.id === emp.id
+                        );
+                        if (employee.id) {
+                          emp[key] = employee[key];
+                        }
+                      }
+                    );
+                  });
+                });
+                return [...data];
               });
             });
-          })
-          return [...data];
-        })
-      });
-    });
-  }, [date]);
+        });
+    },
+    [date]
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -473,42 +486,46 @@ function TableView() {
           <TableCell></TableCell>
         </TableRow>
       </TableHead>
-      {!isLoading ? (
-        <TableBody>
-          <TableRow>
-            <TableCell colSpan={4}></TableCell>
-            <TableCell
-              colSpan={2}
+      <TableBody>
+        <TableRow>
+          <TableCell colSpan={4}></TableCell>
+          <TableCell colSpan={2}>
+            <Typography
               style={{
                 whiteSpace: "nowrap"
               }}
             >
-              <Typography>Capacité max</Typography>
+              Capacité max
+            </Typography>
+          </TableCell>
+          {getColorFields().map((key, i) => (
+            <TableCell key={i} className={classes.inputCell}>
+              <input
+                className={classes.inputBox}
+                onChange={() => fetchColumn(key)}
+              />
             </TableCell>
-            {getColorFields().map((key, i) => (
-              <TableCell key={i} className={classes.inputCell}>
-                <input className={classes.inputBox} onChange={() => fetchColumn(key)} />
-              </TableCell>
-            ))}
-            <TableCell />
-          </TableRow>
-          {data.map((serivce, i) => (
-            <TableService service={serivce} key={i} onChange={onChange} />
           ))}
-        </TableBody>
-      ) : (
-        <div
-          style={{
-            width: "100%",
-            alignSelf: "center",
-            position: "absolute",
-            textAlign: "center",
-            padding: 25
-          }}
-        >
-          <CircularProgress />
-        </div>
-      )}
+          <TableCell />
+        </TableRow>
+        {!isLoading ? (
+          data.map((serivce, i) => (
+            <TableService service={serivce} key={i} onChange={onChange} />
+          ))
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              alignSelf: "center",
+              position: "absolute",
+              textAlign: "center",
+              padding: 25
+            }}
+          >
+            <CircularProgress />
+          </div>
+        )}
+      </TableBody>
     </Table>
   );
 }
