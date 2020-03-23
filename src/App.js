@@ -21,6 +21,7 @@ import {
 } from "@material-ui/icons";
 import cs from "classnames";
 
+import MonthView from './MonthView'
 import Popup from "./components/Popup";
 import AxelorService from "./service/axelor.rest";
 
@@ -440,7 +441,7 @@ function TableView() {
 }
 
 function App() {
-  return <TableView />;
+  return <MonthView />;
 }
 
 export default App;

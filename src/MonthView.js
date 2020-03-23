@@ -63,16 +63,23 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function getColorFields() {
+function getColorFields(days = 31) {
   const fields = [];
-  for (let i = 0; i < 31; i++) {
+  for (let i = 0; i < days; i++) {
     // Changes are for static view only, please change for API
     fields.push(`h${i}ColorSelect`);
   }
   return fields;
 }
 
-function TableEmployee({ employee, profile, hidden, onChange, daySpans }) {
+function TableEmployee({
+  employee,
+  profile,
+  hidden,
+  onChange,
+  daySpans,
+  days
+}) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
     (key, value) => {
@@ -106,7 +113,7 @@ function TableEmployee({ employee, profile, hidden, onChange, daySpans }) {
           </Typography>
         </TableCell>
 
-        {getColorFields().map((key, i) => (
+        {getColorFields(days).map((key, i) => (
           <Popup
             style={
               daySpans.includes(i + 1)
@@ -131,7 +138,7 @@ function TableEmployee({ employee, profile, hidden, onChange, daySpans }) {
   );
 }
 
-function TableProfile({ profile, hidden, onChange, daySpans }) {
+function TableProfile({ profile, hidden, onChange, daySpans, days }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -179,7 +186,7 @@ function TableProfile({ profile, hidden, onChange, daySpans }) {
           </div>
         </TableCell>
 
-        {getColorFields().map((key, i) => (
+        {getColorFields(days).map((key, i) => (
           <Popup
             style={
               daySpans.includes(i + 1)
@@ -207,6 +214,7 @@ function TableProfile({ profile, hidden, onChange, daySpans }) {
           profile={profile}
           key={i}
           hidden={collapsed || hidden}
+          days={days}
           onChange={params => onChange({ ...params, profileId: profile.id })}
         />
       ))}
@@ -259,6 +267,7 @@ function TableService({ service, onChange, daySpans, days }) {
           key={i}
           daySpans={daySpans}
           hidden={collapsed}
+          days={days}
         />
       ))}
     </>
