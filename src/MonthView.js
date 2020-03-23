@@ -106,9 +106,12 @@ function TableEmployee({
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell colSpan={2}></TableCell>
-        <TableCell>
-          <Typography style={{ paddingLeft: 8 }} noWrap title={employee.name}>
+        <TableCell colSpan={3}>
+          <Typography
+            style={{ padding: "0px 8px", textAlign: "right" }}
+            noWrap
+            title={employee.name}
+          >
             {employee.name}
           </Typography>
         </TableCell>
@@ -175,9 +178,14 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell></TableCell>
-        <TableCell onClick={onClick} colSpan={2} style={{ cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
+        <TableCell onClick={onClick} colSpan={3} style={{ cursor: "pointer" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
             <Typography style={{ paddingLeft: 8 }} noWrap title={profile.name}>
               {profile.name}
             </Typography>
@@ -236,7 +244,7 @@ function TableService({ service, onChange, daySpans, days }) {
   return (
     <>
       <TableRow>
-        <TableCell onClick={onClick} style={{ cursor: "pointer" }}>
+        <TableCell colSpan={3} onClick={onClick} style={{ cursor: "pointer" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <Typography style={{ paddingLeft: 8 }} noWrap title={service.name}>
               {service.name}
@@ -245,7 +253,6 @@ function TableService({ service, onChange, daySpans, days }) {
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
-        <TableCell colSpan={2}></TableCell>
         {new Array(days).fill(0).map((_, i) => (
           <TableCell
             key={i}
@@ -637,9 +644,9 @@ function MonthView() {
         </TableRow>
       </TableHead>
 
-      {!isLoading ? (
-        <TableBody>
-          {data.map((service, i) => (
+      <TableBody>
+        {!isLoading ? (
+          data.map((service, i) => (
             <TableService
               days={days}
               service={service}
@@ -647,21 +654,21 @@ function MonthView() {
               onChange={onChange}
               daySpans={daySpans}
             />
-          ))}
-        </TableBody>
-      ) : (
-        <div
-          style={{
-            width: "100%",
-            alignSelf: "center",
-            position: "absolute",
-            textAlign: "center",
-            padding: 25
-          }}
-        >
-          <CircularProgress />
-        </div>
-      )}
+          ))
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              alignSelf: "center",
+              position: "absolute",
+              textAlign: "center",
+              padding: 25
+            }}
+          >
+            <CircularProgress />
+          </div>
+        )}
+      </TableBody>
     </Table>
   );
 }
