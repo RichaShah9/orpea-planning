@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
   TableBody,
+  TextField,
   CircularProgress
 } from "@material-ui/core";
 import {
@@ -61,6 +62,9 @@ const useStyles = makeStyles(theme => ({
     "&:focus": {
       outline: "none"
     }
+  },
+  input: {
+    padding: "10px 5px"
   }
 }));
 
@@ -101,7 +105,17 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
         <TableCell colSpan={4} style={{ textAlign: "right" }}>
           <Typography noWrap>{employee.name}</Typography>
         </TableCell>
-        <TableCell colSpan={2}></TableCell>
+        <TableCell colSpan={2} className={classes.inputCell}>
+          <TextField
+            variant="outlined"
+            type="number"
+            InputProps={{
+              classes: {
+                input: classes.input
+              }
+            }}
+          />
+        </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
             key={i}
@@ -171,7 +185,15 @@ function TableProfile({ profile, hidden, onChange }) {
           </div>
         </TableCell>
         <TableCell colSpan={2} className={classes.inputCell}>
-          <input className={classes.inputBox} type="number" />
+          <TextField
+            variant="outlined"
+            type="number"
+            InputProps={{
+              classes: {
+                input: classes.input
+              }
+            }}
+          />
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
@@ -224,7 +246,15 @@ function TableService({ service, onChange }) {
           </div>
         </TableCell>
         <TableCell colSpan={2} className={classes.inputCell}>
-          <input className={classes.inputBox} type="number" />
+          <TextField
+            variant="outlined"
+            type="number"
+            InputProps={{
+              classes: {
+                input: classes.input
+              }
+            }}
+          />
         </TableCell>
         <TableCell colSpan={15} />
       </TableRow>
@@ -384,7 +414,10 @@ function TableView() {
   }, []);
 
   const fetchColumn = React.useCallback(
-    key => {
+    (key, id, e) => {
+      if (e.target.value > 100) {
+        document.getElementById(id).value = 100;
+      }
       const _data = {
         criteria: [
           {
@@ -498,10 +531,17 @@ function TableView() {
           </TableCell>
           {getColorFields().map((key, i) => (
             <TableCell key={i} className={classes.inputCell}>
-              <input
+              <TextField
+                variant="outlined"
+                id={`capacity_max_${i}`}
+                onChange={e => fetchColumn(key, `capacity_max_${i}`, e)}
                 type="number"
-                className={classes.inputBox}
-                onChange={() => fetchColumn(key)}
+                InputProps={{
+                  inputProps: { min: 0, max: 100 },
+                  classes: {
+                    input: classes.input
+                  }
+                }}
               />
             </TableCell>
           ))}
