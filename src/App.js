@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
     width: "100%",
     border: "none",
     "&:focus": {
-      border: "none"
+      outline: "none"
     }
   }
 }));
@@ -171,7 +171,7 @@ function TableProfile({ profile, hidden, onChange }) {
           </div>
         </TableCell>
         <TableCell colSpan={2} className={classes.inputCell}>
-          <input className={classes.inputBox} />
+          <input className={classes.inputBox} type="number" />
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
@@ -224,7 +224,7 @@ function TableService({ service, onChange }) {
           </div>
         </TableCell>
         <TableCell colSpan={2} className={classes.inputCell}>
-          <input className={classes.inputBox} />
+          <input className={classes.inputBox} type="number" />
         </TableCell>
         <TableCell colSpan={15} />
       </TableRow>
@@ -499,6 +499,7 @@ function TableView() {
           {getColorFields().map((key, i) => (
             <TableCell key={i} className={classes.inputCell}>
               <input
+                type="number"
                 className={classes.inputBox}
                 onChange={() => fetchColumn(key)}
               />
