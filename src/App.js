@@ -50,9 +50,19 @@ const useStyles = makeStyles(theme => ({
   },
   tableCell: {
     padding: "6px 16px",
-    textAlign: "center"
-  }
-}));
+    textAlign: "center",
+  },
+  percentageCell: {
+    padding: 0,
+  },
+  percentageInput: {
+    width: '100%',
+    border: 'none',
+    '&:focus': {
+      border: 'none',
+    }
+  },
+ }));
 
 function getColorFields() {
   const fields = [];
@@ -368,6 +378,39 @@ function TableView() {
     });
   }, []);
 
+  const fetchColumn = React.useCallback((key) => {
+    const _data = {
+      criteria: [
+        {
+          fieldName: "dayDate",
+          operator: "=",
+          value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+        }
+      ]
+    };
+    profileService.search({fields: [key, 'service', 'employee'], data: _data}).then(res => {
+      employeeService.search({fields: [key, 'service', 'profile'], data: _data}).then(employeeResponse => {
+        const profileData = res.data || [];
+        const employeeData = employeeResponse.data || [];
+        setData(data => {
+          profileData.forEach(profile => {
+            data.forEach(service => {
+              const profileIndex  = service.profiles.findIndex(p => p.id === profile.id);
+              service.profiles[profileIndex][key] = profile[key];
+              service.profiles[profileIndex].employees.forEach((emp, i) => {
+                const employee = employeeData.find(e => e.id === emp.id);
+                if(employee.id) {
+                  emp[key] = employee[key];
+                }  
+              });
+            });
+          })
+          return [...data];
+        })
+      });
+    });
+  }, [date]);
+
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -437,8 +480,10 @@ function TableView() {
             >
               <Typography>Capacité max</Typography>
             </TableCell>
-            {new Array(15).fill(0).map((_, i) => (
-              <TableCell key={i}></TableCell>
+            {getColorFields().map((key, i) => (
+              <TableCell key={i} className={classes.percentageCell}>
+                <input className={classes.percentageInput} onChange={() => fetchColumn(key)} />
+              </TableCell>
             ))}
             <TableCell />
           </TableRow>
