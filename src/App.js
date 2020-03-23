@@ -47,6 +47,10 @@ const useStyles = makeStyles(theme => ({
   },
   hidden: {
     display: "none"
+  },
+  tableCell: {
+    padding: "6px 16px",
+    textAlign: "center"
   }
 }));
 
@@ -62,7 +66,6 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
     (key, value) => {
-      console.log("key", key, value);
       employeeService
         .save({
           id: employee.id,
@@ -85,11 +88,10 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell colSpan={2}></TableCell>
-        <TableCell>
+        <TableCell colSpan={4} style={{ textAlign: "right" }}>
           <Typography>{employee.name}</Typography>
         </TableCell>
-
+        <TableCell colSpan={2}></TableCell>
         {getColorFields().map((key, i) => (
           <Popup
             key={i}
@@ -142,14 +144,23 @@ function TableProfile({ profile, hidden, onChange }) {
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell></TableCell>
-        <TableCell onClick={onClick} colSpan={2} style={{ cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
+        <TableCell
+          onClick={onClick}
+          colSpan={4}
+          style={{ cursor: "pointer", textAlign: "center" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
             <Typography>{profile.name}</Typography>&nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
-
+        <TableCell colSpan={2}></TableCell>
         {getColorFields().map((key, i) => (
           <Popup
             key={i}
@@ -187,13 +198,20 @@ function TableService({ service, onChange }) {
   return (
     <>
       <TableRow>
-        <TableCell onClick={onClick} style={{ cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
+        <TableCell onClick={onClick} style={{ cursor: "pointer" }} colSpan={4}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start"
+            }}
+          >
             <Typography>{service.name}</Typography>&nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
-        <TableCell colSpan={18} />
+        <TableCell colSpan={2}></TableCell>
+        <TableCell colSpan={14} />
       </TableRow>
       {profiles.map((profile, i) => (
         <TableProfile
@@ -209,7 +227,7 @@ function TableService({ service, onChange }) {
 
 function TableView() {
   const [data, setData] = React.useState([]);
-
+  const classes = useStyles();
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
   );
@@ -371,8 +389,9 @@ function TableView() {
           </TableCell>
           <TableCell width="10%"></TableCell>
           <TableCell width="10%"></TableCell>
+          <TableCell width="10%" colSpan={3}></TableCell>
           <TableCell colSpan={4}></TableCell>
-          <TableCell>
+          <TableCell className={classes.tableCell}>
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -386,7 +405,7 @@ function TableView() {
               <b>{date}</b>
             </Typography>
           </TableCell>
-          <TableCell>
+          <TableCell className={classes.tableCell}>
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
@@ -395,11 +414,11 @@ function TableView() {
           <TableCell width="20%"></TableCell>
         </TableRow>
         <TableRow>
-          <TableCell colSpan={3}></TableCell>
+          <TableCell colSpan={6}></TableCell>
           {new Array(15).fill(0).map((_, i) => (
-            <TableCell key={i} width="3.125%">
-              <Typography>
-                <b>{i + 8}</b>
+            <TableCell key={i} width="4%" style={{ padding: "6px 16px" }}>
+              <Typography style={{ textAlign: "center" }}>
+                <b>{("0" + (i + 8)).slice(-2)}</b>
               </Typography>
             </TableCell>
           ))}
@@ -409,9 +428,14 @@ function TableView() {
       {!isLoading ? (
         <TableBody>
           <TableRow>
-            <TableCell colSpan={2}></TableCell>
-            <TableCell>
-              <Typography>Percentage</Typography>
+            <TableCell colSpan={4}></TableCell>
+            <TableCell
+              colSpan={2}
+              style={{
+                whiteSpace: "nowrap"
+              }}
+            >
+              <Typography>Capacité max</Typography>
             </TableCell>
             {new Array(15).fill(0).map((_, i) => (
               <TableCell key={i}></TableCell>
