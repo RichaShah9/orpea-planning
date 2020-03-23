@@ -170,7 +170,9 @@ function TableProfile({ profile, hidden, onChange }) {
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
-        <TableCell colSpan={2}></TableCell>
+        <TableCell colSpan={2} className={classes.inputCell}>
+          <input className={classes.inputBox} />
+        </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
             key={i}
@@ -197,6 +199,7 @@ function TableProfile({ profile, hidden, onChange }) {
 function TableService({ service, onChange }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
+  const classes = useStyles();
 
   const onClick = React.useCallback(() => {
     setCollapsed(c => !c);
@@ -220,7 +223,9 @@ function TableService({ service, onChange }) {
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
-        <TableCell colSpan={2}></TableCell>
+        <TableCell colSpan={2} className={classes.inputCell}>
+          <input className={classes.inputBox} />
+        </TableCell>
         <TableCell colSpan={14} />
       </TableRow>
       {profiles.map((profile, i) => (
