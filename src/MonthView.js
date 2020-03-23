@@ -386,6 +386,10 @@ function MonthView() {
       employeeMonthService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
+          if(!res || !employeeResponse) {
+            setLoading(false);
+            return;
+          }
           const { data = [] } = res;
           const { data: employeeData = [] } = employeeResponse;
           const getProfile = profile => {
