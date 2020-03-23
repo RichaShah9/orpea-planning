@@ -536,6 +536,7 @@ function TableView() {
                 id={`capacity_max_${i}`}
                 onChange={e => fetchColumn(key, `capacity_max_${i}`, e)}
                 type="number"
+                style={{ width: "100%" }}
                 InputProps={{
                   inputProps: { min: 0, max: 100 },
                   classes: {
