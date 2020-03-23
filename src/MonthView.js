@@ -131,6 +131,9 @@ function TableEmployee({
             onColorChange={color => onEmployeeChange(key, color)}
           />
         ))}
+        {new Array(31 - days).fill(0).map((_, i) => (
+          <TableCell key={i}></TableCell>
+        ))}
         <TableCell />
       </TableRow>
     </>
@@ -207,6 +210,9 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
             profile={profile}
             onColorChange={color => onProfileChange(key, color)}
           />
+        ))}
+        {new Array(31 - days).fill(0).map((_, i) => (
+          <TableCell key={i}></TableCell>
         ))}
         <TableCell />
       </TableRow>
