@@ -99,7 +99,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
         <TableCell colSpan={4} style={{ textAlign: "right" }}>
-          <Typography>{employee.name}</Typography>
+          <Typography noWrap>{employee.name}</Typography>
         </TableCell>
         <TableCell colSpan={2}></TableCell>
         {getColorFields().map((key, i) => (
@@ -166,7 +166,7 @@ function TableProfile({ profile, hidden, onChange }) {
               justifyContent: "center"
             }}
           >
-            <Typography>{profile.name}</Typography>&nbsp;
+            <Typography noWrap>{profile.name}</Typography>&nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
@@ -219,7 +219,7 @@ function TableService({ service, onChange }) {
               justifyContent: "flex-start"
             }}
           >
-            <Typography>{service.name}</Typography>&nbsp;
+            <Typography noWrap>{service.name}</Typography>&nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
@@ -434,10 +434,14 @@ function TableView() {
   }, [fetchData]);
 
   return (
-    <Table border="1" style={{ width: "100%" }} size="small">
+    <Table
+      border="1"
+      style={{ width: "100%", tableLayout: "fixed" }}
+      size="small"
+    >
       <TableHead>
         <TableRow>
-          <TableCell width="10%" align="center">
+          <TableCell width="8%" align="center">
             <Button
               size="small"
               variant="outlined"
@@ -448,11 +452,9 @@ function TableView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell width="10%"></TableCell>
-          <TableCell width="10%"></TableCell>
-          <TableCell width="10%" colSpan={3}></TableCell>
-          <TableCell colSpan={4}></TableCell>
-          <TableCell className={classes.tableCell}>
+          <TableCell width="24%" colSpan={5}></TableCell>
+          <TableCell colSpan={4} width="18.12%"></TableCell>
+          <TableCell className={classes.tableCell} width="4.53%">
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -461,23 +463,23 @@ function TableView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={5}>
+          <TableCell colSpan={5} width="22.65%">
             <Typography align="center">
               <b>{date}</b>
             </Typography>
           </TableCell>
-          <TableCell className={classes.tableCell}>
+          <TableCell className={classes.tableCell} width="4.53%">
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={4}></TableCell>
-          <TableCell width="20%"></TableCell>
+          <TableCell colSpan={4} width="18.12%"></TableCell>
+          <TableCell width="0.05%"></TableCell>
         </TableRow>
         <TableRow>
           <TableCell colSpan={6}></TableCell>
           {new Array(15).fill(0).map((_, i) => (
-            <TableCell key={i} width="4%" style={{ padding: "6px 16px" }}>
+            <TableCell key={i} style={{ padding: "6px 16px" }}>
               <Typography style={{ textAlign: "center" }}>
                 <b>{("0" + (i + 8)).slice(-2)}</b>
               </Typography>
@@ -490,11 +492,7 @@ function TableView() {
         <TableRow>
           <TableCell colSpan={4}></TableCell>
           <TableCell colSpan={2}>
-            <Typography
-              style={{
-                whiteSpace: "nowrap"
-              }}
-            >
+            <Typography noWrap style={{ textAlign: "center" }}>
               Capacité max
             </Typography>
           </TableCell>
