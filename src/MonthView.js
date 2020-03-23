@@ -58,7 +58,7 @@ const useStyles = makeStyles(theme => ({
 
 function getColorFields(days = 31, text='ColorSelect') {
   const fields = [];
-  for (let i = 0; i < days; i++) {
+  for (let i = 1; i <= days; i++) {
     // Changes are for static view only, please change for API
     fields.push(`d${i}${text}`);
   }
