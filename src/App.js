@@ -52,10 +52,10 @@ const useStyles = makeStyles(theme => ({
     padding: "6px 16px",
     textAlign: "center",
   },
-  percentageCell: {
+  inputCell: {
     padding: 0,
   },
-  percentageInput: {
+  inputBox: {
     width: '100%',
     border: 'none',
     '&:focus': {
@@ -481,8 +481,8 @@ function TableView() {
               <Typography>Capacité max</Typography>
             </TableCell>
             {getColorFields().map((key, i) => (
-              <TableCell key={i} className={classes.percentageCell}>
-                <input className={classes.percentageInput} onChange={() => fetchColumn(key)} />
+              <TableCell key={i} className={classes.inputCell}>
+                <input className={classes.inputBox} onChange={() => fetchColumn(key)} />
               </TableCell>
             ))}
             <TableCell />
