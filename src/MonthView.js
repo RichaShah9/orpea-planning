@@ -352,7 +352,7 @@ function MonthView() {
     const days = getDaysInMonth(month);
     const profileFields = [
       "service",
-      "employee",
+      "employmentContract",
       "monthPeriod",
       "profile",
       ...getColorFields(days),
@@ -421,7 +421,7 @@ function MonthView() {
                 ? getProfile(employee.profile)
                 : service.profiles[profileIndex];
             const empObject = {
-              name: employee.employee.name,
+              name: employee.employmentContract && employee.employmentContract.fullName,
               ...employee
             };
             delete empObject.employee;
