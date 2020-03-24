@@ -282,7 +282,7 @@ function TableView() {
     setLoading(true);
     const profileFields = [
       "service",
-      "employee",
+      "employmentContract",
       "dayDate",
       "profile",
       ...getColorFields()
@@ -309,6 +309,10 @@ function TableView() {
       employeeService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
+          if(!res || !employeeResponse) {
+            setLoading(false);
+            return;
+          }
           const { data = [] } = res;
           const { data: employeeData = [] } = employeeResponse;
           const getProfile = profile => {
@@ -340,7 +344,7 @@ function TableView() {
                 ? getProfile(employee.profile)
                 : service.profiles[profileIndex];
             const empObject = {
-              name: employee.employee.name,
+              name: employee.employmentContract && employee.employmentContract.fullName,
               ...employee
             };
             delete empObject.employee;
