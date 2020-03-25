@@ -48,7 +48,10 @@ function Popup({
   employee,
   profile,
   color: colorProp,
-  onColorChange: onColorChangeProp = () => {}
+  onColorChange: onColorChangeProp = () => {},
+  TableCell,
+  text = "",
+  style = {}
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -83,7 +86,16 @@ function Popup({
   return (
     <>
       <Tooltip arrow title={tooltipTitle}>
-        <TableCell onClick={handleClick} style={{ backgroundColor: color }} />
+        <TableCell
+          onClick={handleClick}
+          style={{ backgroundColor: color, ...style }}
+        >
+          {text && (
+            <Typography align="center" noWrap title={text}>
+              {text}
+            </Typography>
+          )}
+        </TableCell>
       </Tooltip>
       <Popover
         open={open}
@@ -108,5 +120,9 @@ function Popup({
     </>
   );
 }
+
+Popup.defaultProps = {
+  TableCell
+};
 
 export default Popup;

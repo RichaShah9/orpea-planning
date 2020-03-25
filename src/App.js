@@ -6,12 +6,13 @@ import {
   Typography,
   Button,
   Table,
-  TableCell,
+  TableCell as MuiTableCell,
   TableHead,
   TableRow,
   TableBody,
   TextField,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -36,7 +37,17 @@ const employeeService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeDay"
 });
 
-const useStyles = makeStyles(theme => ({
+const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
+  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "1px 0px" }}>
+    {children}
+  </MuiTableCell>
+));
+
+const useStyles = makeStyles(() => ({
+  main: {
+    overflow: "auto",
+    height: "100%",
+  },
   container: {
     padding: 20,
     height: "100%",
@@ -66,7 +77,16 @@ const useStyles = makeStyles(theme => ({
     }
   },
   input: {
-    padding: "10px 5px"
+    padding: "2px 1px"
+  },
+  firstColumnCell: {
+    position: "sticky",
+    top: 0,
+    left: 0,
+    zIndex: 999,
+    width: 300,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee"
   }
 }));
 
@@ -92,7 +112,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
           if (res.data) {
             onChange({
               employeeId: employee.id,
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               key,
               value
             });
@@ -104,10 +124,16 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell colSpan={4} style={{ textAlign: "right" }}>
-          <Typography noWrap>{employee.name}</Typography>
+        <TableCell colSpan={2} className={classes.firstColumnCell}>
+          <Typography
+            style={{ paddingLeft: 8, marginLeft: 55 }}
+            noWrap
+            title={employee.name}
+          >
+            {employee.name}
+          </Typography>
         </TableCell>
-        <TableCell colSpan={2} className={classes.inputCell}>
+        <TableCell className={classes.inputCell}>
           <TextField
             variant="outlined"
             type="number"
@@ -120,6 +146,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
+            TableCell={TableCell}
             key={i}
             color={employee[key]}
             profile={profile}
@@ -155,7 +182,7 @@ function TableProfile({ profile, hidden, onChange }) {
         .then(res => {
           if (res.data) {
             onChange({
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               profileId: profile.id,
               key,
               value
@@ -172,21 +199,25 @@ function TableProfile({ profile, hidden, onChange }) {
       <TableRow className={cs({ [classes.hidden]: hidden })}>
         <TableCell
           onClick={onClick}
-          colSpan={4}
+          colSpan={2}
           style={{ cursor: "pointer", textAlign: "center" }}
+          className={classes.firstColumnCell}
         >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              marginLeft: 20
             }}
           >
-            <Typography noWrap>{profile.name}</Typography>&nbsp;
+            &nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
+            <Typography style={{ paddingLeft: 8 }} title={profile.name} noWrap>
+              {profile.name}
+            </Typography>
           </div>
         </TableCell>
-        <TableCell colSpan={2} className={classes.inputCell}>
+        <TableCell className={classes.inputCell}>
           <TextField
             variant="outlined"
             type="number"
@@ -199,6 +230,7 @@ function TableProfile({ profile, hidden, onChange }) {
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
+            TableCell={TableCell}
             key={i}
             color={profile[key]}
             profile={profile}
@@ -235,19 +267,26 @@ function TableService({ service, onChange }) {
   return (
     <>
       <TableRow>
-        <TableCell onClick={onClick} style={{ cursor: "pointer" }} colSpan={4}>
+        <TableCell
+          onClick={onClick}
+          style={{ cursor: "pointer" }}
+          className={classes.firstColumnCell}
+          colSpan={2}
+        >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start"
+              alignItems: "center"
             }}
           >
-            <Typography noWrap>{service.name}</Typography>&nbsp;
-            <Icon style={{ fontSize: "1rem", color }} />
+            &nbsp;
+            <Icon style={{ fontSize: "1rem", color, marginLeft: 5 }} />
+            <Typography style={{ paddingLeft: 8 }} noWrap title={service.name}>
+              {service.name}
+            </Typography>
           </div>
         </TableCell>
-        <TableCell colSpan={2} className={classes.inputCell}>
+        <TableCell className={classes.inputCell}>
           <TextField
             variant="outlined"
             type="number"
@@ -312,7 +351,7 @@ function TableView() {
       employeeService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
-          if(!res || !employeeResponse) {
+          if (!res || !employeeResponse) {
             setLoading(false);
             return;
           }
@@ -347,7 +386,9 @@ function TableView() {
                 ? getProfile(employee.profile)
                 : service.profiles[profileIndex];
             const empObject = {
-              name: employee.employmentContract && employee.employmentContract.fullName,
+              name:
+                employee.employmentContract &&
+                employee.employmentContract.fullName,
               ...employee
             };
             delete empObject.employee;
@@ -455,6 +496,7 @@ function TableView() {
                     const profileIndex = service.profiles.findIndex(
                       p => p.id === profile.id
                     );
+                    if (!service.profiles[profileIndex]) return;
                     service.profiles[profileIndex][key] = profile[key];
                     service.profiles[profileIndex].employees.forEach(
                       (emp, i) => {
@@ -488,8 +530,15 @@ function TableView() {
     >
       <TableHead>
         <TableRow>
-          <TableCell width="8%" align="center">
+          <TableCell
+            align="center"
+            colSpan={2}
+            className={classes.firstColumnCell}
+          >
             <Button
+              style={{
+                padding: "0px 2px"
+              }}
               size="small"
               variant="outlined"
               color="default"
@@ -521,21 +570,25 @@ function TableView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={5} width="22.65%">
+          <TableCell colSpan={5} width="200px">
             <Typography align="center">
               <b>{date}</b>
             </Typography>
           </TableCell>
-          <TableCell className={classes.tableCell} width="4.53%">
+          <TableCell className={classes.tableCell} width="40px">
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={4} width="18.12%"></TableCell>
-          <TableCell width="0.05%"></TableCell>
+          <TableCell colSpan={4} width="160px"></TableCell>
+          <TableCell></TableCell>
         </TableRow>
         <TableRow>
-          <TableCell colSpan={6}></TableCell>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
+          <TableCell />
           {new Array(15).fill(0).map((_, i) => (
             <TableCell key={i} style={{ padding: "6px 16px" }}>
               <Typography style={{ textAlign: "center" }}>
@@ -548,12 +601,24 @@ function TableView() {
       </TableHead>
       <TableBody>
         <TableRow>
-          <TableCell colSpan={4}></TableCell>
-          <TableCell colSpan={2}>
-            <Typography noWrap style={{ textAlign: "center" }}>
-              Capacité max
-            </Typography>
-          </TableCell>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
+          <Tooltip arrow title="Capacité max">
+            <TableCell>
+              <Typography
+                style={{
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}
+              >
+                Capacité max
+              </Typography>
+            </TableCell>
+          </Tooltip>
           {getColorFields().map((key, i) => (
             <TableCell key={i} className={classes.inputCell}>
               <TextField
@@ -601,7 +666,12 @@ function TableView() {
 }
 
 function App() {
-  return <TableView />;
+  const classes = useStyles();
+  return (
+    <div className={classes.main}>
+      <TableView />
+    </div>
+  );
 }
 
 export default App;
