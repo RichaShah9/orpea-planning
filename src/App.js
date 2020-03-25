@@ -6,7 +6,7 @@ import {
   Typography,
   Button,
   Table,
-  TableCell,
+  TableCell as MuiTableCell,
   TableHead,
   TableRow,
   TableBody,
@@ -33,6 +33,12 @@ const profileService = new AxelorService({
 const employeeService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeDay"
 });
+
+const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
+  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "2px 0px" }}>
+    {children}
+  </MuiTableCell>
+));
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -118,6 +124,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
+            TableCell={TableCell}
             key={i}
             color={employee[key]}
             profile={profile}
@@ -197,6 +204,7 @@ function TableProfile({ profile, hidden, onChange }) {
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
+            TableCell={TableCell}
             key={i}
             color={profile[key]}
             profile={profile}
@@ -309,7 +317,7 @@ function TableView() {
       employeeService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
-          if(!res || !employeeResponse) {
+          if (!res || !employeeResponse) {
             setLoading(false);
             return;
           }
@@ -344,7 +352,9 @@ function TableView() {
                 ? getProfile(employee.profile)
                 : service.profiles[profileIndex];
             const empObject = {
-              name: employee.employmentContract && employee.employmentContract.fullName,
+              name:
+                employee.employmentContract &&
+                employee.employmentContract.fullName,
               ...employee
             };
             delete empObject.employee;
