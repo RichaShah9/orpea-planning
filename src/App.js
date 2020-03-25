@@ -511,8 +511,8 @@ function TableView() {
             </Button>
           </TableCell>
           <TableCell width="24%" colSpan={5}></TableCell>
-          <TableCell colSpan={4} width="18.12%"></TableCell>
-          <TableCell className={classes.tableCell} width="4.53%">
+          <TableCell colSpan={4} width="10%"></TableCell>
+          <TableCell className={classes.tableCell} width="2.5%">
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -521,18 +521,18 @@ function TableView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={5} width="22.65%">
+          <TableCell colSpan={5} width="12.25%">
             <Typography align="center">
               <b>{date}</b>
             </Typography>
           </TableCell>
-          <TableCell className={classes.tableCell} width="4.53%">
+          <TableCell className={classes.tableCell} width="2.5%">
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={4} width="18.12%"></TableCell>
-          <TableCell width="0.05%"></TableCell>
+          <TableCell colSpan={4} width="10%"></TableCell>
+          <TableCell width="30.75%"></TableCell>
         </TableRow>
         <TableRow>
           <TableCell colSpan={6}></TableCell>
