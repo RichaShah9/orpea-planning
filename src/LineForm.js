@@ -1,5 +1,5 @@
 import React from 'react';
-import {Dialog, DialogTitle, Select, MenuItem, DialogContent, DialogActions, Button } from '@material-ui/core';
+import {Dialog, DialogTitle, Select, MenuItem, DialogContent, DialogActions, Button, Typography } from '@material-ui/core';
 import AxelorService from "./service/axelor.rest";
 
 const employmentContractService = new AxelorService({
@@ -11,7 +11,10 @@ function LineForm({handleClose, open, fromDate, date}) {
     const [contract, setContract] = React.useState('');
 
     React.useEffect(() => {
-        employmentContractService.search({fields: ['employee', 'companyDepartment']}).then(res => {
+        const data = {
+            _domain: 'self.companyDepartment = null',
+        };
+        employmentContractService.search({fields: ['employee', 'companyDepartment'], data}).then(res => {
             console.log(res);
             if(res && res.data) {
                 setContracts(res.data);
@@ -31,7 +34,7 @@ function LineForm({handleClose, open, fromDate, date}) {
         if(date) {
             context['lineDate'] = date;
         } else {
-            context['fromDate'] = fromDate;
+            context['lineMonth'] = fromDate;
 
         }
         const object = {
@@ -47,7 +50,7 @@ function LineForm({handleClose, open, fromDate, date}) {
     },[contract, fromDate, date, handleClose]);
 
     return (
-        <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
+        <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open} fullWidth={true}>
             <DialogTitle id="simple-dialog-title">Add Employee</DialogTitle>
             <DialogContent>
                 <Select 
