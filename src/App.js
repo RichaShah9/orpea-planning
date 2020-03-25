@@ -43,9 +43,8 @@ const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
 
 const useStyles = makeStyles(() => ({
   main: {
-    overflowX: "auto",
+    overflow: "auto",
     height: "100%",
-    overflowY: "hidden"
   },
   container: {
     padding: 20,
@@ -111,7 +110,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
           if (res.data) {
             onChange({
               employeeId: employee.id,
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               key,
               value
             });
@@ -181,7 +180,7 @@ function TableProfile({ profile, hidden, onChange }) {
         .then(res => {
           if (res.data) {
             onChange({
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               profileId: profile.id,
               key,
               value
