@@ -27,7 +27,7 @@ import AxelorService from "./service/axelor.rest";
 import "./App.css";
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
-  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "2px 0px" }}>
+  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "1px 0px" }}>
     {children}
   </MuiTableCell>
 ));
@@ -56,7 +56,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function getColorFields(days = 31, text='ColorSelect') {
+function getColorFields(days = 31, text = "ColorSelect") {
   const fields = [];
   for (let i = 1; i <= days; i++) {
     // Changes are for static view only, please change for API
@@ -347,7 +347,6 @@ function MonthView() {
   }, []);
 
   const fetchData = React.useCallback(() => {
-    
     setLoading(true);
     const days = getDaysInMonth(month);
     const profileFields = [
@@ -356,7 +355,7 @@ function MonthView() {
       "monthPeriod",
       "profile",
       ...getColorFields(days),
-      ...getColorFields(days, "Text"),
+      ...getColorFields(days, "Text")
     ];
     const employeeFields = [...profileFields, "profile"];
     const _month = moment(month, MONTH_FORMAT);
@@ -365,12 +364,12 @@ function MonthView() {
         {
           fieldName: "monthPeriod.fromDate",
           operator: "=",
-          value: _month.startOf('month').format("YYYY-MM-DD")
+          value: _month.startOf("month").format("YYYY-MM-DD")
         },
         {
           fieldName: "monthPeriod.toDate",
           operator: "=",
-          value: _month.endOf('month').format("YYYY-MM-DD")
+          value: _month.endOf("month").format("YYYY-MM-DD")
         }
       ]
     };
@@ -386,7 +385,7 @@ function MonthView() {
       employeeMonthService
         .search({ fields: employeeFields, data })
         .then(employeeResponse => {
-          if(!res || !employeeResponse) {
+          if (!res || !employeeResponse) {
             setLoading(false);
             return;
           }
@@ -421,7 +420,9 @@ function MonthView() {
                 ? getProfile(employee.profile)
                 : service.profiles[profileIndex];
             const empObject = {
-              name: employee.employmentContract && employee.employmentContract.fullName,
+              name:
+                employee.employmentContract &&
+                employee.employmentContract.fullName,
               ...employee
             };
             delete empObject.employee;
@@ -519,6 +520,7 @@ function MonthView() {
         <TableRow>
           <TableCell align="center" colSpan={2}>
             <Button
+              style={{ padding: "0px 2px" }}
               size="small"
               variant="outlined"
               color="default"
