@@ -109,7 +109,9 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
         <TableCell colSpan={4} style={{ textAlign: "right" }}>
-          <Typography noWrap>{employee.name}</Typography>
+          <Typography style={{ paddingLeft: 8 }} noWrap title={employee.name}>
+            {employee.name}
+          </Typography>
         </TableCell>
         <TableCell colSpan={2} className={classes.inputCell}>
           <TextField
@@ -187,7 +189,10 @@ function TableProfile({ profile, hidden, onChange }) {
               justifyContent: "center"
             }}
           >
-            <Typography noWrap>{profile.name}</Typography>&nbsp;
+            <Typography style={{ paddingLeft: 8 }} title={profile.name} noWrap>
+              {profile.name}
+            </Typography>
+            &nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
@@ -249,7 +254,10 @@ function TableService({ service, onChange }) {
               justifyContent: "flex-start"
             }}
           >
-            <Typography noWrap>{service.name}</Typography>&nbsp;
+            <Typography style={{ paddingLeft: 8 }} noWrap title={service.name}>
+              {service.name}
+            </Typography>
+            &nbsp;
             <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
