@@ -99,7 +99,7 @@ function TableEmployee({
           if (res.data) {
             onChange({
               employeeId: employee.id,
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               key,
               value
             });
@@ -171,7 +171,7 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
         .then(res => {
           if (res.data) {
             onChange({
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               profileId: profile.id,
               key,
               value
