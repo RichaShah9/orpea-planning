@@ -46,6 +46,11 @@ class AxelorService {
 	logout() {
 		return services.logout();
 	}
+
+	action(data) {
+		const url = 'ws/action'
+		return services.post(url, data);
+	}
 }
 
 export default AxelorService;
