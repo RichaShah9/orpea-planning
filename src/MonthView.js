@@ -10,7 +10,8 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  CircularProgress
+  CircularProgress,
+  TextField
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -54,6 +55,18 @@ const useStyles = makeStyles(theme => ({
   },
   hidden: {
     display: "none"
+  },
+  firstColumnCell: {
+    position: "sticky",
+    top: 0,
+    left: 0,
+    zIndex: 999,
+    width: 300,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee"
+  },
+  input: {
+    padding: "2px 1px"
   }
 }));
 
@@ -91,7 +104,7 @@ function TableEmployee({
           if (res.data) {
             onChange({
               employeeId: employee.id,
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               key,
               value
             });
@@ -103,9 +116,9 @@ function TableEmployee({
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell colSpan={3}>
+        <TableCell colSpan={2} className={classes.firstColumnCell}>
           <Typography
-            style={{ padding: "0px 8px", textAlign: "right" }}
+            style={{ padding: "0px 8px", marginLeft: 60 }}
             noWrap
             title={employee.name}
           >
@@ -163,7 +176,7 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
         .then(res => {
           if (res.data) {
             onChange({
-              version: res.data[0].version,
+              version: res.data[0] && res.data[0].version,
               profileId: profile.id,
               key,
               value
@@ -178,19 +191,24 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
-        <TableCell onClick={onClick} colSpan={3} style={{ cursor: "pointer" }}>
+        <TableCell
+          className={classes.firstColumnCell}
+          onClick={onClick}
+          colSpan={2}
+          style={{ cursor: "pointer" }}
+        >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              marginLeft: 30
             }}
           >
+            &nbsp;
+            <Icon style={{ fontSize: "1rem", color }} />
             <Typography style={{ paddingLeft: 8 }} noWrap title={profile.name}>
               {profile.name}
             </Typography>
-            &nbsp;
-            <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
 
@@ -242,17 +260,22 @@ function TableService({ service, onChange, daySpans, days }) {
 
   const Icon = collapsed ? AddCircle : RemoveCircle;
   const color = collapsed ? "green" : "#2f4050";
-
+  const classes = useStyles();
   return (
     <>
       <TableRow>
-        <TableCell colSpan={3} onClick={onClick} style={{ cursor: "pointer" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
+        <TableCell
+          className={classes.firstColumnCell}
+          colSpan={2}
+          onClick={onClick}
+          style={{ cursor: "pointer" }}
+        >
+          <div style={{ display: "flex", alignItems: "center", marginLeft: 5 }}>
+            &nbsp;
+            <Icon style={{ fontSize: "1rem", color }} />
             <Typography style={{ paddingLeft: 8 }} noWrap title={service.name}>
               {service.name}
             </Typography>
-            &nbsp;
-            <Icon style={{ fontSize: "1rem", color }} />
           </div>
         </TableCell>
         {new Array(days).fill(0).map((_, i) => (
@@ -514,20 +537,16 @@ function MonthView() {
     fetchData();
   }, [fetchData]);
 
+  const classes = useStyles();
   return (
     <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
       <TableHead>
         <TableRow>
-          <TableCell width="8%"></TableCell>
-          <TableCell width="8%"></TableCell>
-          <TableCell width="8%"></TableCell>
-          {new Array(31).fill(0).map((_, i) => (
-            <TableCell width="2.419%" key={i}></TableCell>
-          ))}
-          <TableCell width="1%"></TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell align="center" colSpan={2}>
+          <TableCell
+            align="center"
+            colSpan={2}
+            className={classes.firstColumnCell}
+          >
             <Button
               style={{ padding: "0px 2px" }}
               size="small"
@@ -560,22 +579,26 @@ function MonthView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={6}>
+          <TableCell colSpan={6} style={{ width: 240 }}>
             <Typography align="center">
               <b>{month}</b>
             </Typography>
           </TableCell>
-          <TableCell colSpan={2} align="center">
+          <TableCell colSpan={2} align="center" style={{ width: 80 }}>
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={13}></TableCell>
+          <TableCell colSpan={13} style={{ width: 520 }}></TableCell>
         </TableRow>
 
         {/* Week Spans */}
         <TableRow>
-          <TableCell colSpan={3}></TableCell>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+            style={{ borderBottom: "1px solid black" }}
+          ></TableCell>
           {weekColSpans.map((span, i) => (
             <TableCell
               colSpan={span}
@@ -598,7 +621,10 @@ function MonthView() {
 
         {/* Days Initials */}
         <TableRow>
-          <TableCell colSpan={3}></TableCell>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
           {initials.map((c, i) => (
             <TableCell
               key={i}
@@ -622,7 +648,10 @@ function MonthView() {
 
         {/* Date */}
         <TableRow>
-          <TableCell colSpan={3}></TableCell>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
           {new Array(days).fill(0).map((_, i) => (
             <TableCell
               key={i}
@@ -636,6 +665,39 @@ function MonthView() {
               }
             >
               <Typography align="center">{i + 1}</Typography>
+            </TableCell>
+          ))}
+          {new Array(31 - days).fill(0).map((_, i) => (
+            <TableCell key={i} width="2.419%"></TableCell>
+          ))}
+          <TableCell></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
+          {new Array(days).fill(0).map((_, i) => (
+            <TableCell
+              key={i}
+              style={
+                daySpans.includes(i + 1)
+                  ? {
+                      borderRight: "1px solid black",
+                      boxSizing: "border-box"
+                    }
+                  : {}
+              }
+            >
+              <TextField
+                variant="outlined"
+                type="number"
+                InputProps={{
+                  classes: {
+                    input: classes.input
+                  }
+                }}
+              />
             </TableCell>
           ))}
           {new Array(31 - days).fill(0).map((_, i) => (
