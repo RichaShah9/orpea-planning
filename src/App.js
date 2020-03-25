@@ -434,9 +434,9 @@ function TableView() {
     fetchData();
   }, [fetchData]);
 
-  const toggleDialog = React.useCallback((shouldRefresh) => {
+  const toggleDialog = React.useCallback((shouldRefresh = false) => {
     setOpen(!open);
-    if(shouldRefresh) {
+    if(shouldRefresh === true) {
       onRefresh();
     }
   }, [open, onRefresh])
@@ -548,20 +548,20 @@ function TableView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell width="24%" colSpan={5}>
-              <Button
-                style={{ padding: "0px 2px" }}
-                size="small"
-                variant="outlined"
-                color="default"
-                startIcon={<AddIcon />}
-                onClick={toggleDialog}
-              >
-                Add Employee
-              </Button>
+          <TableCell width="80px"></TableCell>
+          <TableCell colSpan={4} width="160px">
+            <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+              startIcon={<AddIcon />}
+              onClick={toggleDialog}
+            >
+              Add Employee
+            </Button>
           </TableCell>
-          <TableCell colSpan={4} width="18.12%"></TableCell>
-          <TableCell className={classes.tableCell} width="4.53%">
+          <TableCell className={classes.tableCell} width="40px">
             <IconButton
               size="small"
               style={{ padding: 0 }}
