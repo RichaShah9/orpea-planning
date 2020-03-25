@@ -10,7 +10,8 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  CircularProgress
+  CircularProgress,
+  TextField
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -62,6 +63,9 @@ const useStyles = makeStyles(theme => ({
     width: 300,
     background: "#f9f9fc",
     border: "1px solid #eeeeee"
+  },
+  input: {
+    padding: "2px 1px"
   }
 }));
 
@@ -641,6 +645,39 @@ function MonthView() {
               }
             >
               <Typography align="center">{i + 1}</Typography>
+            </TableCell>
+          ))}
+          {new Array(31 - days).fill(0).map((_, i) => (
+            <TableCell key={i} width="2.419%"></TableCell>
+          ))}
+          <TableCell></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell
+            colSpan={2}
+            className={classes.firstColumnCell}
+          ></TableCell>
+          {new Array(days).fill(0).map((_, i) => (
+            <TableCell
+              key={i}
+              style={
+                daySpans.includes(i + 1)
+                  ? {
+                      borderRight: "1px solid black",
+                      boxSizing: "border-box"
+                    }
+                  : {}
+              }
+            >
+              <TextField
+                variant="outlined"
+                type="number"
+                InputProps={{
+                  classes: {
+                    input: classes.input
+                  }
+                }}
+              />
             </TableCell>
           ))}
           {new Array(31 - days).fill(0).map((_, i) => (
