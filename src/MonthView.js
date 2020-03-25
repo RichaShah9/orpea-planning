@@ -23,6 +23,7 @@ import cs from "classnames";
 
 import Popup from "./components/Popup";
 import AxelorService from "./service/axelor.rest";
+import LineForm from "./LineForm";
 
 import "./App.css";
 
@@ -292,7 +293,7 @@ function MonthView() {
   );
 
   const [data, setData] = React.useState([]);
-
+  const [open, setOpen] = React.useState(false);
   const [isLoading, setLoading] = React.useState(false);
 
   const getDaysInMonth = React.useCallback(month => {
@@ -501,6 +502,14 @@ function MonthView() {
     });
   }, []);
 
+  const toggleDialog = React.useCallback((shouldRefresh) => {
+    setOpen(!open);
+    if(shouldRefresh) {
+      onRefresh();
+    }
+  }, [open, onRefresh])
+
+
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -530,7 +539,18 @@ function MonthView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell colSpan={10}></TableCell>
+          <TableCell colSpan={10}>
+            <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+              startIcon={<RefreshIcon />}
+              onClick={toggleDialog}
+            >
+              Add Employee
+            </Button>
+          </TableCell>
           <TableCell colSpan={2} align="center">
             <IconButton
               size="small"
@@ -650,6 +670,11 @@ function MonthView() {
           </div>
         )}
       </TableBody>
+      <LineForm 
+        handleClose={toggleDialog} 
+        open={open} 
+        fromDate={moment(month, MONTH_FORMAT).startOf("month").format("YYYY-MM-DD")}
+      />
     </Table>
   );
 }
