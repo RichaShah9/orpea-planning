@@ -8,10 +8,10 @@ export const OLD_COLORS = [
 ];
 
 export const COLORS = [
-  "#a5d6a7", // Green // Colors are material color 200
-  "#90caf9", // Blue
-  "#fff59d", // Yellow
-  "#ffcc80", // Orange
-  "#ef9a9a", // Red
+  "#81c784", // Green // Colors are material color 300
+  "#64b5f6", // Blue
+  "#fff176", // Yellow
+  "#ffb74d", // Orange
+  "#e57373", // Red
   "#FFFFFF" // White
 ];
