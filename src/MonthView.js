@@ -525,9 +525,9 @@ function MonthView() {
     });
   }, []);
 
-  const toggleDialog = React.useCallback((shouldRefresh) => {
+  const toggleDialog = React.useCallback((shouldRefresh = false) => {
     setOpen(!open);
-    if(shouldRefresh) {
+    if(shouldRefresh === true) {
       onRefresh();
     }
   }, [open, onRefresh])
