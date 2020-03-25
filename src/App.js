@@ -18,12 +18,14 @@ import {
   RemoveCircle,
   Refresh as RefreshIcon,
   NavigateBefore as PreviousIcon,
-  NavigateNext as NextIcon
+  NavigateNext as NextIcon,
+  Add as AddIcon,
 } from "@material-ui/icons";
 import cs from "classnames";
 
 import Popup from "./components/Popup";
 import AxelorService from "./service/axelor.rest";
+import LineForm from "./LineForm";
 
 import "./App.css";
 
@@ -277,6 +279,7 @@ function TableView() {
     moment(new Date()).format("DD-MM-YYYY")
   );
   const [isLoading, setLoading] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const fetchData = React.useCallback(() => {
     setLoading(true);
@@ -390,6 +393,13 @@ function TableView() {
     fetchData();
   }, [fetchData]);
 
+  const toggleDialog = React.useCallback((shouldRefresh) => {
+    setOpen(!open);
+    if(shouldRefresh) {
+      onRefresh();
+    }
+  }, [open, onRefresh])
+
   const onChange = React.useCallback(record => {
     setData(data => {
       const serviceIndex = data.findIndex(s => s.id === record.serviceId);
@@ -489,7 +499,18 @@ function TableView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell width="24%" colSpan={5}></TableCell>
+          <TableCell width="24%" colSpan={5}>
+              <Button
+                style={{ padding: "0px 2px" }}
+                size="small"
+                variant="outlined"
+                color="default"
+                startIcon={<AddIcon />}
+                onClick={toggleDialog}
+              >
+                Add Employee
+              </Button>
+          </TableCell>
           <TableCell colSpan={4} width="18.12%"></TableCell>
           <TableCell className={classes.tableCell} width="4.53%">
             <IconButton
@@ -570,6 +591,11 @@ function TableView() {
           </div>
         )}
       </TableBody>
+      <LineForm 
+        handleClose={toggleDialog} 
+        open={open} 
+        date={date}
+      />
     </Table>
   );
 }
