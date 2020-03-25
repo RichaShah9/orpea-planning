@@ -35,7 +35,7 @@ const employeeService = new AxelorService({
 });
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
-  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "2px 0px" }}>
+  <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "1px 0px" }}>
     {children}
   </MuiTableCell>
 ));
@@ -70,7 +70,7 @@ const useStyles = makeStyles(theme => ({
     }
   },
   input: {
-    padding: "10px 5px"
+    padding: "2px 1px"
   }
 }));
 
