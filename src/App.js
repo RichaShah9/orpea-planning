@@ -498,6 +498,9 @@ function TableView() {
         <TableRow>
           <TableCell width="8%" align="center">
             <Button
+              style={{
+                padding: "0px 2px"
+              }}
               size="small"
               variant="outlined"
               color="default"
