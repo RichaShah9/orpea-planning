@@ -311,8 +311,8 @@ function TableView() {
     const getServiceIndex = serviceId => {
       return serviceList.findIndex(s => s.id === serviceId);
     };
-    const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.id === profileId);
+    const getProfileIndex = (list, profileId, serviceId) => {
+      return list.findIndex(p => p.profileId === profileId && p.serviceId === serviceId);
     };
 
     profileService.search({ fields: profileFields, data }).then(res => {
@@ -325,11 +325,13 @@ function TableView() {
           }
           const { data = [] } = res;
           const { data: employeeData = [] } = employeeResponse;
-          const getProfile = profile => {
-            const _profile = data.find(p => p.profile.id === profile.id) || {};
+          const getProfile = (profile, service) => {
+            const _profile = data.find(p => p.profile.id === profile.id && p.service.id === service.id) || {};
             const profileObject = {
               ..._profile,
               name: profile.name,
+              profileId: profile.id,
+              serviceId: service.id,
               employees: []
             };
             delete profileObject.profile;
@@ -350,11 +352,12 @@ function TableView() {
 
             const profileIndex = getProfileIndex(
               service.profiles,
-              employee.profile.id
+              employee.profile.id,
+              employee.service.id
             );
             const profile =
               profileIndex === -1
-                ? getProfile(employee.profile)
+                ? getProfile(employee.profile, employee.service)
                 : service.profiles[profileIndex];
             const empObject = {
               name:
@@ -379,6 +382,7 @@ function TableView() {
               serviceList.push({ ...service });
             }
           });
+          console.log(serviceList);
           setData(serviceList);
           setLoading(false);
         });
@@ -436,6 +440,7 @@ function TableView() {
         profile[record.key] = record.value;
         profile["version"] = record.version;
       }
+      console.log("onCHange", profile);
       service.profiles[profileIndex] = { ...profile };
       data[serviceIndex] = { ...service };
       return [...data];
