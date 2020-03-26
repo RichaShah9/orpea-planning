@@ -715,7 +715,7 @@ function MonthView() {
               align="center"
               colSpan={2}
               className={classes.topCell}
-              style={{ borderBottom: "1px solid black", top: 25 }}
+              style={{ top: 25 }}
             >
               {/* <Button
               style={{ padding: "0px 2px" }}
@@ -736,7 +736,7 @@ function MonthView() {
                 colSpan={span}
                 key={i}
                 style={{
-                  border: "1px solid black",
+                  borderRight: "1px solid black",
                   boxSizing: "border-box",
                   top: 25
                 }}
