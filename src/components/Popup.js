@@ -26,8 +26,7 @@ function PopupContent({
   employee = {},
   profile = {},
   color,
-  onColorChange = () => {},
-  
+  onColorChange = () => {}
 }) {
   const classes = useStyles();
   return (
@@ -52,14 +51,17 @@ function Popup({
   onColorChange: onColorChangeProp = () => {},
   TableCell,
   text = "",
-  style = {}
+  style = {},
+  disablePopup
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const [color, setColor] = React.useState(colorProp);
 
   const handleClick = event => {
-    setAnchorEl(event.currentTarget);
+    if (!disablePopup) {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleClose = () => {
