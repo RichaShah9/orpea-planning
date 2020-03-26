@@ -74,7 +74,17 @@ const useStyles = makeStyles(() => ({
     zIndex: 999,
     width: 300,
     background: "#f9f9fc",
-    border: "1px solid #eeeeee"
+    border: "1px solid #eeeeee !important"
+  },
+  fixCell: {
+    position: "sticky",
+    top: -1,
+    zIndex: 1500,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee !important"
+  },
+  inputCell: {
+    padding: 0
   },
   input: {
     padding: "2px 1px"
@@ -302,7 +312,7 @@ function TableView() {
       return serviceList.findIndex(s => s.id === serviceId);
     };
     const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.profileId === profileId);
+      return list.findIndex(p => p.id === profileId);
     };
 
     profileService.search({ fields: profileFields, data }).then(res => {
@@ -320,7 +330,6 @@ function TableView() {
             const profileObject = {
               ..._profile,
               name: profile.name,
-              profileId: profile.id,
               employees: []
             };
             delete profileObject.profile;
@@ -467,7 +476,8 @@ function TableView() {
           <TableCell
             align="center"
             colSpan={2}
-            className={classes.firstColumnCell}
+            className={classes.fixCell}
+            width="300px"
           >
             <Button
               style={{
@@ -482,8 +492,9 @@ function TableView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell colSpan={4} width="160px">
+          <TableCell colSpan={4} width="160px" className={classes.fixCell}>
             <TextField
+              className={classes.inputCell}
               variant="outlined"
               type="number"
               InputProps={{
@@ -499,7 +510,10 @@ function TableView() {
               }}
             />
           </TableCell>
-          <TableCell className={classes.tableCell} width="40px">
+          <TableCell
+            className={cs(classes.tableCell, classes.fixCell)}
+            width="40px"
+          >
             <IconButton
               size="small"
               style={{ padding: 0 }}
@@ -508,17 +522,25 @@ function TableView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={5} width="200px">
+          <TableCell colSpan={5} width="200px" className={classes.fixCell}>
             <Typography align="center">
               <b>{date}</b>
             </Typography>
           </TableCell>
-          <TableCell className={classes.tableCell} width="40px">
+          <TableCell
+            className={cs(classes.tableCell, classes.fixCell)}
+            width="40px"
+          >
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={4} width="160px">
+          <TableCell
+            colSpan={4}
+            width="160px"
+            className={classes.fixCell}
+            style={{ textAlign: "center" }}
+          >
             <Button
               style={{ padding: "0px 2px" }}
               size="small"
@@ -530,36 +552,31 @@ function TableView() {
               Add Employee
             </Button>
           </TableCell>
-          <TableCell></TableCell>
+          <TableCell className={classes.fixCell}></TableCell>
         </TableRow>
         <TableRow>
           <TableCell
             align="center"
             colSpan={2}
-            className={classes.firstColumnCell}
-          >
-            {/* <Button
-              style={{ padding: "0px 2px" }}
-              size="small"
-              variant="outlined"
-              color="default"
-            >
-              Sauvegarder nouvelle version
-            </Button>
-            <FormControlLabel
-              labelPlacement="start"
-              control={<Select />}
-              label="Sélectionner Version"
-            /> */}
-          </TableCell>
+            className={classes.fixCell}
+            width="300px"
+            style={{ top: 28 }}
+          ></TableCell>
           {new Array(15).fill(0).map((_, i) => (
-            <TableCell key={i} style={{ padding: "6px 16px" }}>
+            <TableCell
+              key={i}
+              style={{ padding: "6px 16px", top: 28 }}
+              className={classes.fixCell}
+            >
               <Typography style={{ textAlign: "center" }}>
                 <b>{("0" + (i + 8)).slice(-2)}</b>
               </Typography>
             </TableCell>
           ))}
-          <TableCell></TableCell>
+          <TableCell
+            className={classes.fixCell}
+            style={{ top: 28 }}
+          ></TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
