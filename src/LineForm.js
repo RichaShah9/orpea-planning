@@ -20,7 +20,6 @@ function LineForm({handleClose, open, fromDate, date}) {
             // _domain: 'self.service = null',
         };
         employmentContractService.search({fields: ['fullName', 'companyDepartment'], data}).then(res => {
-            console.log(res);
             if(res && res.data) {
                 setContracts(res.data);
             }
