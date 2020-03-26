@@ -651,7 +651,7 @@ function MonthView() {
                 color="default"
                 onClick={toggleDialog}
               >
-                Add Employee
+                Ajouter employé
               </Button>
             </TableCell>
             <TableCell colSpan={10} style={{ width: 400 }}></TableCell>
