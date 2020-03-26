@@ -79,7 +79,7 @@ const useStyles = makeStyles(() => ({
   fixCell: {
     position: "sticky",
     top: -1,
-    zIndex: 1500,
+    zIndex: 800,
     background: "#f9f9fc",
     border: "1px solid #eeeeee !important"
   },
@@ -476,7 +476,14 @@ function TableView() {
           <TableCell
             align="center"
             colSpan={2}
-            className={classes.fixCell}
+            style={{
+              position: "sticky",
+              left: 0,
+              zIndex: 99999,
+              background: "#f9f9fc",
+              border: "1px solid #eeeeee",
+              top: -1
+            }}
             width="300px"
           >
             <Button
@@ -558,14 +565,20 @@ function TableView() {
           <TableCell
             align="center"
             colSpan={2}
-            className={classes.fixCell}
+            style={{
+              position: "sticky",
+              left: 0,
+              zIndex: 99999,
+              background: "#f9f9fc",
+              border: "1px solid #eeeeee",
+              top: 25
+            }}
             width="300px"
-            style={{ top: 28 }}
           ></TableCell>
           {new Array(15).fill(0).map((_, i) => (
             <TableCell
               key={i}
-              style={{ padding: "6px 16px", top: 28 }}
+              style={{ padding: "6px 16px", top: 25 }}
               className={classes.fixCell}
             >
               <Typography style={{ textAlign: "center" }}>
@@ -575,7 +588,7 @@ function TableView() {
           ))}
           <TableCell
             className={classes.fixCell}
-            style={{ top: 28 }}
+            style={{ top: 25 }}
           ></TableCell>
         </TableRow>
       </TableHead>
