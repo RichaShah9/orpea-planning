@@ -11,6 +11,8 @@ import {
   TableRow,
   TableBody,
   CircularProgress,
+  FormControlLabel,
+  Select,
   TextField
 } from "@material-ui/core";
 import {
@@ -672,10 +674,25 @@ function MonthView() {
         {/* Week Spans */}
         <TableRow>
           <TableCell
+            align="center"
             colSpan={2}
             className={classes.firstColumnCell}
             style={{ borderBottom: "1px solid black" }}
-          ></TableCell>
+          >
+            {/* <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+            >
+              Sauvegarder nouvelle version
+            </Button>
+            <FormControlLabel
+              labelPlacement="start"
+              control={<Select />}
+              label="Sélectionner Version"
+            /> */}
+          </TableCell>
           {weekColSpans.map((span, i) => (
             <TableCell
               colSpan={span}
