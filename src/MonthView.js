@@ -796,6 +796,7 @@ function MonthView() {
                   onKeyPress={(e) => {
                     if(e.key === 'Enter') {
                       onInputChange(e.target.value, i+1);
+                      e.preventDefault();
                     }
                   }}
                 />
