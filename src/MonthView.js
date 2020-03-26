@@ -407,7 +407,9 @@ function MonthView() {
       return serviceList.findIndex(s => s.id === serviceId);
     };
     const getProfileIndex = (list, profileId, serviceId) => {
-      return list.findIndex(p => p.profileId === profileId && p.serviceId === serviceId);
+      return list.findIndex(
+        p => p.profileId === profileId && p.serviceId === serviceId
+      );
     };
 
     profileMonthService
@@ -424,7 +426,10 @@ function MonthView() {
             const { data: employeeData = [] } = employeeResponse;
             const getProfile = (profile, service) => {
               const _profile =
-                data.find(p => p.profile.id === profile.id && p.service.id === service.id) || {};
+                data.find(
+                  p =>
+                    p.profile.id === profile.id && p.service.id === service.id
+                ) || {};
               const profileObject = {
                 ..._profile,
                 name: profile.name,
@@ -505,8 +510,6 @@ function MonthView() {
   const onRefresh = React.useCallback(() => {
     fetchData();
   }, [fetchData]);
-
-  
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -623,7 +626,7 @@ function MonthView() {
     const initials = getDaysInititals(month);
     const { weekColSpans, daySpans } = getWeekColSpans(initials, days);
     return (
-    <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
+      <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
         <TableHead>
           <TableRow>
             <TableCell
@@ -695,7 +698,6 @@ function MonthView() {
               control={<Select />}
               label="Sélectionner Version"
             /> */}
-
             </TableCell>
             {weekColSpans.map((span, i) => (
               <TableCell
@@ -795,9 +797,9 @@ function MonthView() {
                       input: classes.input
                     }
                   }}
-                  onKeyPress={(e) => {
-                    if(e.key === 'Enter') {
-                      onInputChange(e.target.value, i+1);
+                  onKeyPress={e => {
+                    if (e.key === "Enter") {
+                      onInputChange(e.target.value, i + 1);
                       e.preventDefault();
                     }
                   }}
@@ -837,7 +839,22 @@ function MonthView() {
           )}
         </TableBody>
       </Table>
-  )}, [classes, data, onChange, onInputChange, onNext, onPrevious, isLoading, month, onRefresh, getDaysInMonth, getDaysInititals, getWeekColSpans, toggleDialog])
+    );
+  }, [
+    classes,
+    data,
+    onChange,
+    onInputChange,
+    onNext,
+    onPrevious,
+    isLoading,
+    month,
+    onRefresh,
+    getDaysInMonth,
+    getDaysInititals,
+    getWeekColSpans,
+    toggleDialog
+  ]);
 
   return (
     <React.Fragment>
