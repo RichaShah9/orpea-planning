@@ -20,7 +20,8 @@ import {
   RemoveCircle,
   Refresh as RefreshIcon,
   NavigateBefore as PreviousIcon,
-  NavigateNext as NextIcon
+  NavigateNext as NextIcon,
+  Add as AddIcon
 } from "@material-ui/icons";
 import cs from "classnames";
 
@@ -650,6 +651,7 @@ function MonthView() {
                 variant="outlined"
                 color="default"
                 onClick={toggleDialog}
+                startIcon={<AddIcon />}
               >
                 Ajouter employé
               </Button>
