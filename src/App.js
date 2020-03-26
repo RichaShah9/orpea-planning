@@ -297,7 +297,7 @@ function TableView() {
       return serviceList.findIndex(s => s.id === serviceId);
     };
     const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.id === profileId);
+      return list.findIndex(p => p.profileId === profileId);
     };
 
     profileService.search({ fields: profileFields, data }).then(res => {
@@ -315,6 +315,7 @@ function TableView() {
             const profileObject = {
               ..._profile,
               name: profile.name,
+              profileId: profile.id,
               employees: []
             };
             delete profileObject.profile;
@@ -333,7 +334,7 @@ function TableView() {
                   }
                 : serviceList[serviceIndex];
 
-            const profileIndex = getProfileIndex(service.profiles, employee.id);
+            const profileIndex = getProfileIndex(service.profiles, employee.profile.id);
             const profile =
               profileIndex === -1
                 ? getProfile(employee.profile)
@@ -422,9 +423,18 @@ function TableView() {
   }, []);
 
   const updatePlanning = React.useCallback((input, date) => {
-    // call update meyhod
-    console.log(input, date);
-    onRefresh();
+    const data = {
+      action: "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
+      data:{
+        value: Number(input),
+        date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD"),
+      }
+    }
+    employeeService.action(data).then(res => {
+      if(res && res.data && res.data[0].reload) {
+        onRefresh();
+      }
+    });
   }, [onRefresh])
 
   React.useEffect(() => {

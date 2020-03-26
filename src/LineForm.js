@@ -1,5 +1,5 @@
 import React from 'react';
-import {Dialog, DialogTitle, Select, MenuItem, DialogContent, DialogActions, Button, Typography } from '@material-ui/core';
+import {Dialog, DialogTitle, Select, MenuItem, DialogContent, DialogActions, Button } from '@material-ui/core';
 import AxelorService from "./service/axelor.rest";
 
 const employmentContractService = new AxelorService({
@@ -23,7 +23,6 @@ function LineForm({handleClose, open, fromDate, date}) {
     }, []);
 
     const handleChange = React.useCallback((e) => {
-        console.log(e);
         setContract(e.target.value);
     }, []);
 
