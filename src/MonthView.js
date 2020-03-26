@@ -550,40 +550,51 @@ function MonthView() {
       colorFieldName,
     ];
     //call update planning method
-    profileMonthService
-      .search({ fields, data: getQueryData(month) })
-      .then(res => {
-        employeeMonthService
+    const data = {
+      action: "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
+      data:{
+        value: Number(input),
+        date: moment(month, MONTH_FORMAT).startOf('month').format("YYYY-MM-DD"),
+      }
+    }
+    profileMonthService.action(data).then(res => {
+      if(res && res.data && res.data[0].reload) {
+        profileMonthService
           .search({ fields, data: getQueryData(month) })
-          .then(employeeResponse => {
-            const profileData = res.data || [];
-            const employeeData = employeeResponse.data || [];
-            setData(data => {
-              profileData.forEach(profile => {
-                data.forEach(service => {
-                  const profileIndex = service.profiles.findIndex(
-                    p => p.id === profile.id
-                  );
-                  if (!service.profiles[profileIndex]) return;
-                  service.profiles[profileIndex][textFieldName] = profile[textFieldName];
-                  service.profiles[profileIndex][colorFieldName] = profile[colorFieldName];
-                  service.profiles[profileIndex].employees.forEach(
-                    (emp, i) => {
-                      const employee = employeeData.find(
-                        e => e.id === emp.id
+          .then(res => {
+            employeeMonthService
+              .search({ fields, data: getQueryData(month) })
+              .then(employeeResponse => {
+                const profileData = res.data || [];
+                const employeeData = employeeResponse.data || [];
+                setData(data => {
+                  profileData.forEach(profile => {
+                    data.forEach(service => {
+                      const profileIndex = service.profiles.findIndex(
+                        p => p.id === profile.id
                       );
-                      if (employee.id) {
-                        emp[textFieldName] = employee[textFieldName];
-                        emp[colorFieldName] = employee[colorFieldName];
-                      }
-                    }
-                  );
+                      if (!service.profiles[profileIndex]) return;
+                      service.profiles[profileIndex][textFieldName] = profile[textFieldName];
+                      service.profiles[profileIndex][colorFieldName] = profile[colorFieldName];
+                      service.profiles[profileIndex].employees.forEach(
+                        (emp, i) => {
+                          const employee = employeeData.find(
+                            e => e.id === emp.id
+                          );
+                          if (employee.id) {
+                            emp[textFieldName] = employee[textFieldName];
+                            emp[colorFieldName] = employee[colorFieldName];
+                          }
+                        }
+                      );
+                    });
+                  });
+                  return [...data];
                 });
               });
-              return [...data];
-            });
-          });
-      })
+          })
+      }
+    })
   }, [month])
 
   React.useEffect(() => {
