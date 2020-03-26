@@ -498,6 +498,16 @@ function TableView() {
             >
               Refresh
             </Button>
+            <Button
+              style={{ padding: "0px 2px", marginLeft: 10 }}
+              size="small"
+              variant="outlined"
+              color="default"
+              startIcon={<AddIcon />}
+              onClick={toggleDialog}
+            >
+              Ajouter employé
+            </Button>
           </TableCell>
           <TableCell colSpan={4} width="160px" className={classes.fixCell}>
             <TextField
@@ -547,18 +557,7 @@ function TableView() {
             width="160px"
             className={classes.fixCell}
             style={{ textAlign: "center" }}
-          >
-            <Button
-              style={{ padding: "0px 2px" }}
-              size="small"
-              variant="outlined"
-              color="default"
-              startIcon={<AddIcon />}
-              onClick={toggleDialog}
-            >
-              Ajouter employé
-            </Button>
-          </TableCell>
+          ></TableCell>
           <TableCell className={classes.fixCell}></TableCell>
         </TableRow>
         <TableRow>
