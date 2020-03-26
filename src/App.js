@@ -528,7 +528,21 @@ function TableView() {
             align="center"
             colSpan={2}
             className={classes.firstColumnCell}
-          ></TableCell>
+          >
+            <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+            >
+              Sauvegarder nouvelle version
+            </Button>
+            <FormControlLabel
+              labelPlacement="start"
+              control={<Select />}
+              label="Sélectionner Version"
+            />
+          </TableCell>
           {new Array(15).fill(0).map((_, i) => (
             <TableCell key={i} style={{ padding: "6px 16px" }}>
               <Typography style={{ textAlign: "center" }}>
