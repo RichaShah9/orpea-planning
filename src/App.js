@@ -297,7 +297,7 @@ function TableView() {
       return serviceList.findIndex(s => s.id === serviceId);
     };
     const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.id === profileId);
+      return list.findIndex(p => p.profileId === profileId);
     };
 
     profileService.search({ fields: profileFields, data }).then(res => {
@@ -315,6 +315,7 @@ function TableView() {
             const profileObject = {
               ..._profile,
               name: profile.name,
+              profileId: profile.id,
               employees: []
             };
             delete profileObject.profile;
@@ -333,7 +334,7 @@ function TableView() {
                   }
                 : serviceList[serviceIndex];
 
-            const profileIndex = getProfileIndex(service.profiles, employee.id);
+            const profileIndex = getProfileIndex(service.profiles, employee.profile.id);
             const profile =
               profileIndex === -1
                 ? getProfile(employee.profile)
@@ -424,7 +425,7 @@ function TableView() {
   const updatePlanning = React.useCallback((input, date) => {
     // call update meyhod
     console.log(input, date);
-    onRefresh();
+        onRefresh();
   }, [onRefresh])
 
   React.useEffect(() => {
