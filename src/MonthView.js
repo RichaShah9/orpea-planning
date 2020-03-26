@@ -406,8 +406,8 @@ function MonthView() {
     const getServiceIndex = serviceId => {
       return serviceList.findIndex(s => s.id === serviceId);
     };
-    const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.profileId === profileId);
+    const getProfileIndex = (list, profileId, serviceId) => {
+      return list.findIndex(p => p.profileId === profileId && p.serviceId === serviceId);
     };
 
     profileMonthService
@@ -422,13 +422,14 @@ function MonthView() {
             }
             const { data = [] } = res;
             const { data: employeeData = [] } = employeeResponse;
-            const getProfile = profile => {
+            const getProfile = (profile, service) => {
               const _profile =
-                data.find(p => p.profile.id === profile.id) || {};
+                data.find(p => p.profile.id === profile.id && p.service.id === service.id) || {};
               const profileObject = {
                 ..._profile,
                 name: profile.name,
                 profileId: profile.id,
+                serviceId: service.id,
                 employees: []
               };
               delete profileObject.profile;
@@ -449,11 +450,12 @@ function MonthView() {
 
               const profileIndex = getProfileIndex(
                 service.profiles,
-                employee.profile.id
+                employee.profile.id,
+                employee.service.id
               );
               const profile =
                 profileIndex === -1
-                  ? getProfile(employee.profile)
+                  ? getProfile(employee.profile, employee.service)
                   : service.profiles[profileIndex];
               const empObject = {
                 name:
