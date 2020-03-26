@@ -703,7 +703,7 @@ function MonthView() {
               </IconButton>
             </TableCell>
             <TableCell
-              colSpan={11}
+              colSpan={12}
               width="520px"
               className={classes.fixCell}
             ></TableCell>
