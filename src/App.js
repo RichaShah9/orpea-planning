@@ -529,7 +529,7 @@ function TableView() {
             colSpan={2}
             className={classes.firstColumnCell}
           >
-            <Button
+            {/* <Button
               style={{ padding: "0px 2px" }}
               size="small"
               variant="outlined"
@@ -541,7 +541,7 @@ function TableView() {
               labelPlacement="start"
               control={<Select />}
               label="Sélectionner Version"
-            />
+            /> */}
           </TableCell>
           {new Array(15).fill(0).map((_, i) => (
             <TableCell key={i} style={{ padding: "6px 16px" }}>
