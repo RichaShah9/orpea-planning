@@ -671,7 +671,7 @@ function MonthView() {
                 <NextIcon fontSize="small" />
               </IconButton>
             </TableCell>
-            <TableCell colSpan={13} style={{ width: 520 }}></TableCell>
+            <TableCell colSpan={11} style={{ width: 520 }}></TableCell>
           </TableRow>
 
           {/* Week Spans */}
