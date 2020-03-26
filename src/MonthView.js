@@ -63,13 +63,29 @@ const useStyles = makeStyles(theme => ({
     position: "sticky",
     top: 0,
     left: 0,
-    zIndex: 999,
+    zIndex: 1,
     width: 300,
     background: "#f9f9fc",
     border: "1px solid #eeeeee"
   },
   input: {
     padding: "2px 1px"
+  },
+  fixCell: {
+    position: "sticky",
+    top: -1,
+    zIndex: 2,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee"
+  },
+  topCell: {
+    position: "sticky",
+    left: 0,
+    zIndex: 10,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee",
+    top: -1,
+    width: 300
   }
 }));
 
@@ -630,11 +646,7 @@ function MonthView() {
       <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
         <TableHead>
           <TableRow>
-            <TableCell
-              align="center"
-              colSpan={2}
-              className={classes.firstColumnCell}
-            >
+            <TableCell align="center" colSpan={2} className={classes.topCell}>
               <Button
                 style={{ padding: "0px 2px" }}
                 size="small"
@@ -656,8 +668,17 @@ function MonthView() {
                 Ajouter employé
               </Button>
             </TableCell>
-            <TableCell colSpan={10} style={{ width: 400 }}></TableCell>
-            <TableCell colSpan={2} align="center" style={{ width: 80 }}>
+            <TableCell
+              colSpan={10}
+              width="400px"
+              className={classes.fixCell}
+            ></TableCell>
+            <TableCell
+              colSpan={2}
+              align="center"
+              width="80px"
+              className={classes.fixCell}
+            >
               <IconButton
                 size="small"
                 style={{ padding: 0 }}
@@ -666,17 +687,26 @@ function MonthView() {
                 <PreviousIcon fontSize="small" />
               </IconButton>
             </TableCell>
-            <TableCell colSpan={6} style={{ width: 240 }}>
+            <TableCell colSpan={6} width="240px" className={classes.fixCell}>
               <Typography align="center">
                 <b>{month}</b>
               </Typography>
             </TableCell>
-            <TableCell colSpan={2} align="center" style={{ width: 80 }}>
+            <TableCell
+              colSpan={2}
+              align="center"
+              style={{ width: 80 }}
+              className={classes.fixCell}
+            >
               <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
                 <NextIcon fontSize="small" />
               </IconButton>
             </TableCell>
-            <TableCell colSpan={11} style={{ width: 520 }}></TableCell>
+            <TableCell
+              colSpan={11}
+              width="520px"
+              className={classes.fixCell}
+            ></TableCell>
           </TableRow>
 
           {/* Week Spans */}
@@ -684,8 +714,8 @@ function MonthView() {
             <TableCell
               align="center"
               colSpan={2}
-              className={classes.firstColumnCell}
-              style={{ borderBottom: "1px solid black" }}
+              className={classes.topCell}
+              style={{ borderBottom: "1px solid black", top: 25 }}
             >
               {/* <Button
               style={{ padding: "0px 2px" }}
@@ -707,8 +737,10 @@ function MonthView() {
                 key={i}
                 style={{
                   border: "1px solid black",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
+                  top: 25
                 }}
+                className={classes.fixCell}
               >
                 <Typography align="center">
                   <b>S{i}</b>
@@ -716,79 +748,110 @@ function MonthView() {
               </TableCell>
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
-              <TableCell key={i}></TableCell>
+              <TableCell
+                className={classes.fixCell}
+                style={{ top: 25 }}
+                key={i}
+              ></TableCell>
             ))}
-            <TableCell></TableCell>
+            <TableCell
+              className={classes.fixCell}
+              style={{ top: 25 }}
+            ></TableCell>
           </TableRow>
 
           {/* Days Initials */}
           <TableRow>
             <TableCell
               colSpan={2}
-              className={classes.firstColumnCell}
+              className={classes.topCell}
+              style={{ top: 50 }}
             ></TableCell>
             {initials.map((c, i) => (
               <TableCell
+                className={classes.fixCell}
                 key={i}
                 style={
                   daySpans.includes(i + 1)
                     ? {
                         borderRight: "1px solid black",
-                        boxSizing: "border-box"
+                        boxSizing: "border-box",
+                        top: 50
                       }
-                    : {}
+                    : { top: 50 }
                 }
               >
                 <Typography align="center">{c}</Typography>
               </TableCell>
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
-              <TableCell key={i}></TableCell>
+              <TableCell
+                className={classes.fixCell}
+                style={{ top: 50 }}
+                key={i}
+              ></TableCell>
             ))}
-            <TableCell></TableCell>
+            <TableCell
+              className={classes.fixCell}
+              style={{ top: 50 }}
+            ></TableCell>
           </TableRow>
 
           {/* Date */}
           <TableRow>
             <TableCell
               colSpan={2}
-              className={classes.firstColumnCell}
+              className={classes.topCell}
+              style={{ top: 75 }}
             ></TableCell>
             {new Array(days).fill(0).map((_, i) => (
               <TableCell
+                className={classes.fixCell}
                 key={i}
                 style={
                   daySpans.includes(i + 1)
                     ? {
                         borderRight: "1px solid black",
-                        boxSizing: "border-box"
+                        boxSizing: "border-box",
+                        top: 75
                       }
-                    : {}
+                    : { top: 75 }
                 }
               >
                 <Typography align="center">{i + 1}</Typography>
               </TableCell>
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
-              <TableCell key={i} width="2.419%"></TableCell>
+              <TableCell
+                style={{ top: 75 }}
+                className={classes.fixCell}
+                key={i}
+                width="2.419%"
+              ></TableCell>
             ))}
-            <TableCell></TableCell>
+            <TableCell
+              style={{ top: 75 }}
+              className={classes.fixCell}
+            ></TableCell>
           </TableRow>
           <TableRow>
             <TableCell
               colSpan={2}
-              className={classes.firstColumnCell}
+              className={classes.topCell}
+              style={{ top: 100 }}
             ></TableCell>
             {new Array(days).fill(0).map((_, i) => (
               <TableCell
                 key={i}
+                className={classes.fixCell}
                 style={
                   daySpans.includes(i + 1)
                     ? {
                         borderRight: "1px solid black",
-                        boxSizing: "border-box"
+                        boxSizing: "border-box",
+                        top: 100
                       }
-                    : {}
+                    : { top: 100 }
                 }
               >
                 <TextField
@@ -809,9 +872,17 @@ function MonthView() {
               </TableCell>
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
-              <TableCell key={i} width="2.419%"></TableCell>
+              <TableCell
+                style={{ top: 100 }}
+                className={classes.fixCell}
+                key={i}
+                width="2.419%"
+              ></TableCell>
             ))}
-            <TableCell></TableCell>
+            <TableCell
+              style={{ top: 100 }}
+              className={classes.fixCell}
+            ></TableCell>
           </TableRow>
         </TableHead>
 
