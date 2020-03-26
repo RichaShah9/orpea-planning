@@ -71,7 +71,7 @@ const useStyles = makeStyles(() => ({
     position: "sticky",
     top: 0,
     left: 0,
-    zIndex: 999,
+    zIndex: 2,
     width: 300,
     background: "#f9f9fc",
     border: "1px solid #eeeeee !important"
@@ -79,7 +79,7 @@ const useStyles = makeStyles(() => ({
   fixCell: {
     position: "sticky",
     top: -1,
-    zIndex: 800,
+    zIndex: 1,
     background: "#f9f9fc",
     border: "1px solid #eeeeee !important"
   },
@@ -88,6 +88,13 @@ const useStyles = makeStyles(() => ({
   },
   input: {
     padding: "2px 1px"
+  },
+  topCell: {
+    position: "sticky",
+    left: 0,
+    zIndex: 10,
+    background: "#f9f9fc",
+    border: "1px solid #eeeeee"
   }
 }));
 
@@ -477,13 +484,9 @@ function TableView() {
             align="center"
             colSpan={2}
             style={{
-              position: "sticky",
-              left: 0,
-              zIndex: 99999,
-              background: "#f9f9fc",
-              border: "1px solid #eeeeee",
               top: -1
             }}
+            className={classes.topCell}
             width="300px"
           >
             <Button
@@ -564,12 +567,8 @@ function TableView() {
           <TableCell
             align="center"
             colSpan={2}
+            className={classes.topCell}
             style={{
-              position: "sticky",
-              left: 0,
-              zIndex: 99999,
-              background: "#f9f9fc",
-              border: "1px solid #eeeeee",
               top: 25
             }}
             width="300px"
