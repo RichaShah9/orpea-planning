@@ -11,6 +11,8 @@ import {
   TableRow,
   TableBody,
   CircularProgress,
+  FormControlLabel,
+  Select,
   TextField
 } from "@material-ui/core";
 import {
@@ -98,7 +100,7 @@ function getQueryData(month) {
         value: _month.endOf("month").format("YYYY-MM-DD")
       }
     ]
-  }
+  };
 }
 
 function TableEmployee({
@@ -408,72 +410,78 @@ function MonthView() {
       return list.findIndex(p => p.profileId === profileId);
     };
 
-    profileMonthService.search({ fields: profileFields, data: getQueryData(month) }).then(res => {
-      employeeMonthService
-        .search({ fields: employeeFields, data: getQueryData(month) })
-        .then(employeeResponse => {
-          if (!res || !employeeResponse) {
-            setLoading(false);
-            return;
-          }
-          const { data = [] } = res;
-          const { data: employeeData = [] } = employeeResponse;
-          const getProfile = profile => {
-            const _profile = data.find(p => p.profile.id === profile.id) || {};
-            const profileObject = {
-              ..._profile,
-              name: profile.name,
-              profileId: profile.id,
-              employees: []
+    profileMonthService
+      .search({ fields: profileFields, data: getQueryData(month) })
+      .then(res => {
+        employeeMonthService
+          .search({ fields: employeeFields, data: getQueryData(month) })
+          .then(employeeResponse => {
+            if (!res || !employeeResponse) {
+              setLoading(false);
+              return;
+            }
+            const { data = [] } = res;
+            const { data: employeeData = [] } = employeeResponse;
+            const getProfile = profile => {
+              const _profile =
+                data.find(p => p.profile.id === profile.id) || {};
+              const profileObject = {
+                ..._profile,
+                name: profile.name,
+                profileId: profile.id,
+                employees: []
+              };
+              delete profileObject.profile;
+              delete profileObject.service;
+              return profileObject;
             };
-            delete profileObject.profile;
-            delete profileObject.service;
-            return profileObject;
-          };
 
-          employeeData.forEach(employee => {
-            const serviceIndex = getServiceIndex(employee.service.id);
-            const service =
-              serviceIndex === -1
-                ? {
-                    name: employee.service.name,
-                    id: employee.service.id,
-                    profiles: []
-                  }
-                : serviceList[serviceIndex];
+            employeeData.forEach(employee => {
+              const serviceIndex = getServiceIndex(employee.service.id);
+              const service =
+                serviceIndex === -1
+                  ? {
+                      name: employee.service.name,
+                      id: employee.service.id,
+                      profiles: []
+                    }
+                  : serviceList[serviceIndex];
 
-            const profileIndex = getProfileIndex(service.profiles, employee.profile.id);
-            const profile =
-              profileIndex === -1
-                ? getProfile(employee.profile)
-                : service.profiles[profileIndex];
-            const empObject = {
-              name:
-                employee.employmentContract &&
-                employee.employmentContract.fullName,
-              ...employee
-            };
-            delete empObject.employee;
-            delete empObject.profile;
-            delete empObject.service;
-            profile.employees.push({
-              ...empObject
+              const profileIndex = getProfileIndex(
+                service.profiles,
+                employee.profile.id
+              );
+              const profile =
+                profileIndex === -1
+                  ? getProfile(employee.profile)
+                  : service.profiles[profileIndex];
+              const empObject = {
+                name:
+                  employee.employmentContract &&
+                  employee.employmentContract.fullName,
+                ...employee
+              };
+              delete empObject.employee;
+              delete empObject.profile;
+              delete empObject.service;
+              profile.employees.push({
+                ...empObject
+              });
+              if (profileIndex !== -1) {
+                service.profiles[profileIndex] = { ...profile };
+              } else {
+                service.profiles.push({ ...profile });
+              }
+              if (serviceIndex !== -1) {
+                serviceList[serviceIndex] = { ...service };
+              } else {
+                serviceList.push({ ...service });
+              }
             });
-            if (profileIndex !== -1) {
-              service.profiles[profileIndex] = { ...profile };
-            } else {
-              service.profiles.push({ ...profile });
-            }
-            if (serviceIndex !== -1) {
-              serviceList[serviceIndex] = { ...service };
-            } else {
-              serviceList.push({ ...service });
-            }
+            setData(serviceList);
+            setLoading(false);
           });
-          setData(serviceList);
-          setLoading(false);
-        });
-    });
+      });
   }, [month, getDaysInMonth]);
 
   const onPrevious = React.useCallback(() => {
@@ -535,64 +543,72 @@ function MonthView() {
     [onRefresh]
   );
 
-  const onInputChange = React.useCallback((input, key) => {
-    const textFieldName = getText(key);
-    const colorFieldName = `d${key}ColorSelect`;
-    const fields = [
-      "service",
-      "employmentContract",
-      "monthPeriod",
-      "profile",
-      textFieldName,
-      colorFieldName,
-    ];
-    //call update planning method
-    const data = {
-      action: "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
-      data:{
-        value: Number(input),
-        date: moment(month, MONTH_FORMAT).startOf('month').format("YYYY-MM-DD"),
-      }
-    }
-    profileMonthService.action(data).then(res => {
-      if(res && res.data && res.data[0].reload) {
-        profileMonthService
-          .search({ fields, data: getQueryData(month) })
-          .then(res => {
-            employeeMonthService
-              .search({ fields, data: getQueryData(month) })
-              .then(employeeResponse => {
-                const profileData = res.data || [];
-                const employeeData = employeeResponse.data || [];
-                setData(data => {
-                  profileData.forEach(profile => {
-                    data.forEach(service => {
-                      const profileIndex = service.profiles.findIndex(
-                        p => p.id === profile.id
-                      );
-                      if (!service.profiles[profileIndex]) return;
-                      service.profiles[profileIndex][textFieldName] = profile[textFieldName];
-                      service.profiles[profileIndex][colorFieldName] = profile[colorFieldName];
-                      service.profiles[profileIndex].employees.forEach(
-                        (emp, i) => {
-                          const employee = employeeData.find(
-                            e => e.id === emp.id
-                          );
-                          if (employee.id) {
-                            emp[textFieldName] = employee[textFieldName];
-                            emp[colorFieldName] = employee[colorFieldName];
+  const onInputChange = React.useCallback(
+    (input, key) => {
+      const textFieldName = getText(key);
+      const colorFieldName = `d${key}ColorSelect`;
+      const fields = [
+        "service",
+        "employmentContract",
+        "monthPeriod",
+        "profile",
+        textFieldName,
+        colorFieldName
+      ];
+      //call update planning method
+      const data = {
+        action:
+          "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
+        data: {
+          value: Number(input),
+          date: moment(month, MONTH_FORMAT)
+            .startOf("month")
+            .format("YYYY-MM-DD")
+        }
+      };
+      profileMonthService.action(data).then(res => {
+        if (res && res.data && res.data[0].reload) {
+          profileMonthService
+            .search({ fields, data: getQueryData(month) })
+            .then(res => {
+              employeeMonthService
+                .search({ fields, data: getQueryData(month) })
+                .then(employeeResponse => {
+                  const profileData = res.data || [];
+                  const employeeData = employeeResponse.data || [];
+                  setData(data => {
+                    profileData.forEach(profile => {
+                      data.forEach(service => {
+                        const profileIndex = service.profiles.findIndex(
+                          p => p.id === profile.id
+                        );
+                        if (!service.profiles[profileIndex]) return;
+                        service.profiles[profileIndex][textFieldName] =
+                          profile[textFieldName];
+                        service.profiles[profileIndex][colorFieldName] =
+                          profile[colorFieldName];
+                        service.profiles[profileIndex].employees.forEach(
+                          (emp, i) => {
+                            const employee = employeeData.find(
+                              e => e.id === emp.id
+                            );
+                            if (employee.id) {
+                              emp[textFieldName] = employee[textFieldName];
+                              emp[colorFieldName] = employee[colorFieldName];
+                            }
                           }
-                        }
-                      );
+                        );
+                      });
                     });
+                    return [...data];
                   });
-                  return [...data];
                 });
-              });
-          })
-      }
-    })
-  }, [month])
+            });
+        }
+      });
+    },
+    [month]
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -659,10 +675,26 @@ function MonthView() {
           {/* Week Spans */}
           <TableRow>
             <TableCell
+              align="center"
               colSpan={2}
               className={classes.firstColumnCell}
               style={{ borderBottom: "1px solid black" }}
-            ></TableCell>
+            >
+              {/* <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+            >
+              Sauvegarder nouvelle version
+            </Button>
+            <FormControlLabel
+              labelPlacement="start"
+              control={<Select />}
+              label="Sélectionner Version"
+            /> */}
+
+            </TableCell>
             {weekColSpans.map((span, i) => (
               <TableCell
                 colSpan={span}

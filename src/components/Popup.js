@@ -1,5 +1,15 @@
 import React from "react";
-import { Popover, Typography, Tooltip, TableCell } from "@material-ui/core";
+import {
+  Popover,
+  Typography,
+  Tooltip,
+  TableCell,
+  FormControlLabel,
+  Checkbox,
+  MenuItem,
+  Select,
+  Button
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import ColorPicker from "./ColorPicker";
@@ -26,7 +36,13 @@ function PopupContent({
   employee = {},
   profile = {},
   color,
-  onColorChange = () => {}
+  onColorChange = () => {},
+  onChecked = () => {},
+  checked,
+  selectValue,
+  onSelect = () => {},
+  onValidate = () => {},
+  disableCheckbox
 }) {
   const classes = useStyles();
   return (
@@ -39,6 +55,49 @@ function PopupContent({
       <Typography gutterBottom>
         <b>Profile :</b> {profile.name}
       </Typography>
+      {!disableCheckbox && (
+        <>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={checked}
+                onChange={({ target: { checked } }) => onChecked(checked)}
+                name="checkedA"
+              />
+            }
+            label="Absent"
+          />
+          {checked && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                padding: "10px 0"
+              }}
+            >
+              <Select
+                value={selectValue}
+                onChange={({ target: { value } }) => onSelect(value)}
+              >
+                {["Congé payé", "Congé sans solde", "Arrêt Maladie"].map(v => (
+                  <MenuItem value={v} key={v}>
+                    {v}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button
+                style={{ padding: "0px 2px", width: "60%", marginTop: 10 }}
+                size="small"
+                variant="outlined"
+                color="default"
+                onClick={onValidate}
+              >
+                Valider
+              </Button>
+            </div>
+          )}
+        </>
+      )}
       <ColorPicker circleSpacing={12} color={color} onChange={onColorChange} />
     </div>
   );
@@ -83,6 +142,9 @@ function Popup({
     setColor(colorProp);
   }, [colorProp]);
 
+  const [checked, setChecked] = React.useState(false);
+  const [selectValue, setSelectValue] = React.useState("Congé payé");
+
   let tooltipTitle = "";
   if (profile) tooltipTitle += `Profile: ${profile.name}; `;
   if (employee) tooltipTitle += `Employee: ${employee.name}`;
@@ -118,6 +180,11 @@ function Popup({
           profile={profile}
           color={color}
           onColorChange={onColorChange}
+          checked={checked}
+          onChecked={setChecked}
+          selectValue={selectValue}
+          onSelect={setSelectValue}
+          disableCheckbox
         />
       </Popover>
     </>
