@@ -525,13 +525,15 @@ function MonthView() {
     });
   }, []);
 
-  const toggleDialog = React.useCallback((shouldRefresh = false) => {
-    setOpen(!open);
-    if(shouldRefresh === true) {
-      onRefresh();
-    }
-  }, [open, onRefresh])
-
+  const toggleDialog = React.useCallback(
+    (shouldRefresh = false) => {
+      setOpen(!open);
+      if (shouldRefresh === true) {
+        onRefresh();
+      }
+    },
+    [open, onRefresh]
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -560,16 +562,14 @@ function MonthView() {
           </TableCell>
           <TableCell colSpan={10} style={{ width: 400 }}>
             <Button
-              style={{ padding: "0px 2px" }}
+              style={{ padding: "0px 2px", marginLeft: 10 }}
               size="small"
               variant="outlined"
               color="default"
-              startIcon={<RefreshIcon />}
               onClick={toggleDialog}
             >
               Add Employee
             </Button>
-
           </TableCell>
           <TableCell colSpan={2} align="center" style={{ width: 80 }}>
             <IconButton
@@ -733,10 +733,12 @@ function MonthView() {
           </div>
         )}
       </TableBody>
-      <LineForm 
-        handleClose={toggleDialog} 
-        open={open} 
-        fromDate={moment(month, MONTH_FORMAT).startOf("month").format("YYYY-MM-DD")}
+      <LineForm
+        handleClose={toggleDialog}
+        open={open}
+        fromDate={moment(month, MONTH_FORMAT)
+          .startOf("month")
+          .format("YYYY-MM-DD")}
       />
     </Table>
   );
