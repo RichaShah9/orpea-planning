@@ -75,6 +75,9 @@ const useStyles = makeStyles(() => ({
     width: 300,
     background: "#f9f9fc",
     border: "1px solid #eeeeee"
+  },
+  input: {
+    padding: "2px 1px"
   }
 }));
 
@@ -252,7 +255,7 @@ function TableService({ service, onChange }) {
             </Typography>
           </div>
         </TableCell>
-        <TableCell colSpan={15} />
+        <TableCell colSpan={16} />
       </TableRow>
       {profiles.map((profile, i) => (
         <TableProfile
@@ -481,7 +484,13 @@ function TableView() {
           </TableCell>
           <TableCell colSpan={4} width="160px">
             <TextField
+              variant="outlined"
               type="number"
+              InputProps={{
+                classes: {
+                  input: classes.input
+                }
+              }}
               onKeyPress={e => {
                 if (e.key === "Enter") {
                   updatePlanning(e.target.value, date);
