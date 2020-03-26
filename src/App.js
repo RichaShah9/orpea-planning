@@ -518,6 +518,12 @@ function TableView() {
     [date]
   );
 
+  const updatePlanning = React.useCallback((input, date) => {
+    // call update meyhod
+    console.log(input, date);
+    onRefresh();
+  }, [onRefresh])
+
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -550,16 +556,15 @@ function TableView() {
           </TableCell>
           <TableCell width="80px"></TableCell>
           <TableCell colSpan={4} width="160px">
-            <Button
-              style={{ padding: "0px 2px" }}
-              size="small"
-              variant="outlined"
-              color="default"
-              startIcon={<AddIcon />}
-              onClick={toggleDialog}
-            >
-              Add Employee
-            </Button>
+            <TextField 
+              type="number"
+              onKeyPress={(e) => {
+                if(e.key === 'Enter') {
+                  updatePlanning(e.target.value, date);
+                  e.preventDefault();
+                }
+              }} 
+            />
           </TableCell>
           <TableCell className={classes.tableCell} width="40px">
             <IconButton
@@ -580,7 +585,18 @@ function TableView() {
               <NextIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={4} width="160px"></TableCell>
+          <TableCell colSpan={4} width="160px">
+            <Button
+              style={{ padding: "0px 2px" }}
+              size="small"
+              variant="outlined"
+              color="default"
+              startIcon={<AddIcon />}
+              onClick={toggleDialog}
+            >
+              Add Employee
+            </Button>
+          </TableCell>
           <TableCell></TableCell>
         </TableRow>
         <TableRow>
