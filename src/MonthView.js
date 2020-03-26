@@ -610,8 +610,6 @@ function MonthView() {
             >
               Refresh
             </Button>
-          </TableCell>
-          <TableCell colSpan={10} style={{ width: 400 }}>
             <Button
               style={{ padding: "0px 2px", marginLeft: 10 }}
               size="small"
@@ -622,6 +620,7 @@ function MonthView() {
               Add Employee
             </Button>
           </TableCell>
+          <TableCell colSpan={10} style={{ width: 400 }}></TableCell>
           <TableCell colSpan={2} align="center" style={{ width: 80 }}>
             <IconButton
               size="small"
