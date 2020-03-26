@@ -496,11 +496,7 @@ function MonthView() {
     fetchData();
   }, [fetchData]);
 
-  const days = getDaysInMonth(month);
-
-  const initials = getDaysInititals(month);
-
-  const { weekColSpans, daySpans } = getWeekColSpans(initials, days);
+  
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -531,12 +527,12 @@ function MonthView() {
 
   const toggleDialog = React.useCallback(
     (shouldRefresh = false) => {
-      setOpen(!open);
+      setOpen(open => !open);
       if (shouldRefresh === true) {
         onRefresh();
       }
     },
-    [open, onRefresh]
+    [onRefresh]
   );
 
   const onInputChange = React.useCallback((input, key) => {
@@ -603,203 +599,214 @@ function MonthView() {
   }, [fetchData]);
 
   const classes = useStyles();
-  return (
-    <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell
-            align="center"
-            colSpan={2}
-            className={classes.firstColumnCell}
-          >
-            <Button
-              style={{ padding: "0px 2px" }}
-              size="small"
-              variant="outlined"
-              color="default"
-              startIcon={<RefreshIcon />}
-              onClick={onRefresh}
-            >
-              Refresh
-            </Button>
-            <Button
-              style={{ padding: "0px 2px", marginLeft: 10 }}
-              size="small"
-              variant="outlined"
-              color="default"
-              onClick={toggleDialog}
-            >
-              Add Employee
-            </Button>
-          </TableCell>
-          <TableCell colSpan={10} style={{ width: 400 }}></TableCell>
-          <TableCell colSpan={2} align="center" style={{ width: 80 }}>
-            <IconButton
-              size="small"
-              style={{ padding: 0 }}
-              onClick={onPrevious}
-            >
-              <PreviousIcon fontSize="small" />
-            </IconButton>
-          </TableCell>
-          <TableCell colSpan={6} style={{ width: 240 }}>
-            <Typography align="center">
-              <b>{month}</b>
-            </Typography>
-          </TableCell>
-          <TableCell colSpan={2} align="center" style={{ width: 80 }}>
-            <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
-              <NextIcon fontSize="small" />
-            </IconButton>
-          </TableCell>
-          <TableCell colSpan={13} style={{ width: 520 }}></TableCell>
-        </TableRow>
 
-        {/* Week Spans */}
-        <TableRow>
-          <TableCell
-            colSpan={2}
-            className={classes.firstColumnCell}
-            style={{ borderBottom: "1px solid black" }}
-          ></TableCell>
-          {weekColSpans.map((span, i) => (
+  const renderTable = React.useMemo(() => {
+    const days = getDaysInMonth(month);
+    const initials = getDaysInititals(month);
+    const { weekColSpans, daySpans } = getWeekColSpans(initials, days);
+    return (
+    <Table style={{ width: "100%", tableLayout: "fixed" }} size="small">
+        <TableHead>
+          <TableRow>
             <TableCell
-              colSpan={span}
-              key={i}
-              style={{
-                border: "1px solid black",
-                boxSizing: "border-box"
-              }}
+              align="center"
+              colSpan={2}
+              className={classes.firstColumnCell}
             >
+              <Button
+                style={{ padding: "0px 2px" }}
+                size="small"
+                variant="outlined"
+                color="default"
+                startIcon={<RefreshIcon />}
+                onClick={onRefresh}
+              >
+                Refresh
+              </Button>
+              <Button
+                style={{ padding: "0px 2px", marginLeft: 10 }}
+                size="small"
+                variant="outlined"
+                color="default"
+                onClick={toggleDialog}
+              >
+                Add Employee
+              </Button>
+            </TableCell>
+            <TableCell colSpan={10} style={{ width: 400 }}></TableCell>
+            <TableCell colSpan={2} align="center" style={{ width: 80 }}>
+              <IconButton
+                size="small"
+                style={{ padding: 0 }}
+                onClick={onPrevious}
+              >
+                <PreviousIcon fontSize="small" />
+              </IconButton>
+            </TableCell>
+            <TableCell colSpan={6} style={{ width: 240 }}>
               <Typography align="center">
-                <b>S{i}</b>
+                <b>{month}</b>
               </Typography>
             </TableCell>
-          ))}
-          {new Array(31 - days).fill(0).map((_, i) => (
-            <TableCell key={i}></TableCell>
-          ))}
-          <TableCell></TableCell>
-        </TableRow>
-
-        {/* Days Initials */}
-        <TableRow>
-          <TableCell
-            colSpan={2}
-            className={classes.firstColumnCell}
-          ></TableCell>
-          {initials.map((c, i) => (
-            <TableCell
-              key={i}
-              style={
-                daySpans.includes(i + 1)
-                  ? {
-                      borderRight: "1px solid black",
-                      boxSizing: "border-box"
-                    }
-                  : {}
-              }
-            >
-              <Typography align="center">{c}</Typography>
+            <TableCell colSpan={2} align="center" style={{ width: 80 }}>
+              <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
+                <NextIcon fontSize="small" />
+              </IconButton>
             </TableCell>
-          ))}
-          {new Array(31 - days).fill(0).map((_, i) => (
-            <TableCell key={i}></TableCell>
-          ))}
-          <TableCell></TableCell>
-        </TableRow>
+            <TableCell colSpan={13} style={{ width: 520 }}></TableCell>
+          </TableRow>
 
-        {/* Date */}
-        <TableRow>
-          <TableCell
-            colSpan={2}
-            className={classes.firstColumnCell}
-          ></TableCell>
-          {new Array(days).fill(0).map((_, i) => (
+          {/* Week Spans */}
+          <TableRow>
             <TableCell
-              key={i}
-              style={
-                daySpans.includes(i + 1)
-                  ? {
-                      borderRight: "1px solid black",
-                      boxSizing: "border-box"
-                    }
-                  : {}
-              }
-            >
-              <Typography align="center">{i + 1}</Typography>
-            </TableCell>
-          ))}
-          {new Array(31 - days).fill(0).map((_, i) => (
-            <TableCell key={i} width="2.419%"></TableCell>
-          ))}
-          <TableCell></TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell
-            colSpan={2}
-            className={classes.firstColumnCell}
-          ></TableCell>
-          {new Array(days).fill(0).map((_, i) => (
+              colSpan={2}
+              className={classes.firstColumnCell}
+              style={{ borderBottom: "1px solid black" }}
+            ></TableCell>
+            {weekColSpans.map((span, i) => (
+              <TableCell
+                colSpan={span}
+                key={i}
+                style={{
+                  border: "1px solid black",
+                  boxSizing: "border-box"
+                }}
+              >
+                <Typography align="center">
+                  <b>S{i}</b>
+                </Typography>
+              </TableCell>
+            ))}
+            {new Array(31 - days).fill(0).map((_, i) => (
+              <TableCell key={i}></TableCell>
+            ))}
+            <TableCell></TableCell>
+          </TableRow>
+
+          {/* Days Initials */}
+          <TableRow>
             <TableCell
-              key={i}
-              style={
-                daySpans.includes(i + 1)
-                  ? {
-                      borderRight: "1px solid black",
-                      boxSizing: "border-box"
+              colSpan={2}
+              className={classes.firstColumnCell}
+            ></TableCell>
+            {initials.map((c, i) => (
+              <TableCell
+                key={i}
+                style={
+                  daySpans.includes(i + 1)
+                    ? {
+                        borderRight: "1px solid black",
+                        boxSizing: "border-box"
+                      }
+                    : {}
+                }
+              >
+                <Typography align="center">{c}</Typography>
+              </TableCell>
+            ))}
+            {new Array(31 - days).fill(0).map((_, i) => (
+              <TableCell key={i}></TableCell>
+            ))}
+            <TableCell></TableCell>
+          </TableRow>
+
+          {/* Date */}
+          <TableRow>
+            <TableCell
+              colSpan={2}
+              className={classes.firstColumnCell}
+            ></TableCell>
+            {new Array(days).fill(0).map((_, i) => (
+              <TableCell
+                key={i}
+                style={
+                  daySpans.includes(i + 1)
+                    ? {
+                        borderRight: "1px solid black",
+                        boxSizing: "border-box"
+                      }
+                    : {}
+                }
+              >
+                <Typography align="center">{i + 1}</Typography>
+              </TableCell>
+            ))}
+            {new Array(31 - days).fill(0).map((_, i) => (
+              <TableCell key={i} width="2.419%"></TableCell>
+            ))}
+            <TableCell></TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell
+              colSpan={2}
+              className={classes.firstColumnCell}
+            ></TableCell>
+            {new Array(days).fill(0).map((_, i) => (
+              <TableCell
+                key={i}
+                style={
+                  daySpans.includes(i + 1)
+                    ? {
+                        borderRight: "1px solid black",
+                        boxSizing: "border-box"
+                      }
+                    : {}
+                }
+              >
+                <TextField
+                  variant="outlined"
+                  type="number"
+                  InputProps={{
+                    classes: {
+                      input: classes.input
                     }
-                  : {}
-              }
-            >
-              <TextField
-                variant="outlined"
-                type="number"
-                InputProps={{
-                  classes: {
-                    input: classes.input
-                  }
-                }}
-                onKeyPress={(e) => {
-                  if(e.key === 'Enter') {
-                    onInputChange(e.target.value, i+1);
-                  }
-                }}
+                  }}
+                  onKeyPress={(e) => {
+                    if(e.key === 'Enter') {
+                      onInputChange(e.target.value, i+1);
+                    }
+                  }}
+                />
+              </TableCell>
+            ))}
+            {new Array(31 - days).fill(0).map((_, i) => (
+              <TableCell key={i} width="2.419%"></TableCell>
+            ))}
+            <TableCell></TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {!isLoading ? (
+            data.map((service, i) => (
+              <TableService
+                days={days}
+                service={service}
+                key={i}
+                onChange={onChange}
+                daySpans={daySpans}
               />
-            </TableCell>
-          ))}
-          {new Array(31 - days).fill(0).map((_, i) => (
-            <TableCell key={i} width="2.419%"></TableCell>
-          ))}
-          <TableCell></TableCell>
-        </TableRow>
-      </TableHead>
+            ))
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                alignSelf: "center",
+                position: "absolute",
+                textAlign: "center",
+                padding: 25
+              }}
+            >
+              <CircularProgress />
+            </div>
+          )}
+        </TableBody>
+      </Table>
+  )}, [classes, data, onChange, onInputChange, onNext, onPrevious, isLoading, month, onRefresh, getDaysInMonth, getDaysInititals, getWeekColSpans, toggleDialog])
 
-      <TableBody>
-        {!isLoading ? (
-          data.map((service, i) => (
-            <TableService
-              days={days}
-              service={service}
-              key={i}
-              onChange={onChange}
-              daySpans={daySpans}
-            />
-          ))
-        ) : (
-          <div
-            style={{
-              width: "100%",
-              alignSelf: "center",
-              position: "absolute",
-              textAlign: "center",
-              padding: 25
-            }}
-          >
-            <CircularProgress />
-          </div>
-        )}
-      </TableBody>
+  return (
+    <React.Fragment>
+      {renderTable}
       <LineForm
         handleClose={toggleDialog}
         open={open}
@@ -807,7 +814,7 @@ function MonthView() {
           .startOf("month")
           .format("YYYY-MM-DD")}
       />
-    </Table>
+    </React.Fragment>
   );
 }
 
