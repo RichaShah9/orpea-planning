@@ -423,9 +423,18 @@ function TableView() {
   }, []);
 
   const updatePlanning = React.useCallback((input, date) => {
-    // call update meyhod
-    console.log(input, date);
+    const data = {
+      action: "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
+      data:{
+        value: Number(input),
+        date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD"),
+      }
+    }
+    employeeService.action(data).then(res => {
+      if(res && res.data && res.data[0].reload) {
         onRefresh();
+      }
+    });
   }, [onRefresh])
 
   React.useEffect(() => {
