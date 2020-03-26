@@ -11,8 +11,7 @@ import {
   TableRow,
   TableBody,
   TextField,
-  CircularProgress,
-  Tooltip
+  CircularProgress
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -65,19 +64,6 @@ const useStyles = makeStyles(() => ({
   tableCell: {
     padding: "6px 16px",
     textAlign: "center"
-  },
-  inputCell: {
-    padding: 0
-  },
-  inputBox: {
-    width: "100%",
-    border: "none",
-    "&:focus": {
-      outline: "none"
-    }
-  },
-  input: {
-    padding: "2px 1px"
   },
   firstColumnCell: {
     position: "sticky",
@@ -132,17 +118,6 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
           >
             {employee.name}
           </Typography>
-        </TableCell>
-        <TableCell className={classes.inputCell}>
-          <TextField
-            variant="outlined"
-            type="number"
-            InputProps={{
-              classes: {
-                input: classes.input
-              }
-            }}
-          />
         </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
@@ -217,17 +192,6 @@ function TableProfile({ profile, hidden, onChange }) {
             </Typography>
           </div>
         </TableCell>
-        <TableCell className={classes.inputCell}>
-          <TextField
-            variant="outlined"
-            type="number"
-            InputProps={{
-              classes: {
-                input: classes.input
-              }
-            }}
-          />
-        </TableCell>
         {getColorFields().map((key, i) => (
           <Popup
             TableCell={TableCell}
@@ -285,17 +249,6 @@ function TableService({ service, onChange }) {
               {service.name}
             </Typography>
           </div>
-        </TableCell>
-        <TableCell className={classes.inputCell}>
-          <TextField
-            variant="outlined"
-            type="number"
-            InputProps={{
-              classes: {
-                input: classes.input
-              }
-            }}
-          />
         </TableCell>
         <TableCell colSpan={15} />
       </TableRow>
@@ -468,56 +421,6 @@ function TableView() {
     });
   }, []);
 
-  const fetchColumn = React.useCallback(
-    (key, id, e) => {
-      if (e.target.value > 100) {
-        document.getElementById(id).value = 100;
-      }
-      const _data = {
-        criteria: [
-          {
-            fieldName: "dayDate",
-            operator: "=",
-            value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
-          }
-        ]
-      };
-      profileService
-        .search({ fields: [key, "service", "employee"], data: _data })
-        .then(res => {
-          employeeService
-            .search({ fields: [key, "service", "profile"], data: _data })
-            .then(employeeResponse => {
-              const profileData = res.data || [];
-              const employeeData = employeeResponse.data || [];
-              setData(data => {
-                profileData.forEach(profile => {
-                  data.forEach(service => {
-                    const profileIndex = service.profiles.findIndex(
-                      p => p.id === profile.id
-                    );
-                    if (!service.profiles[profileIndex]) return;
-                    service.profiles[profileIndex][key] = profile[key];
-                    service.profiles[profileIndex].employees.forEach(
-                      (emp, i) => {
-                        const employee = employeeData.find(
-                          e => e.id === emp.id
-                        );
-                        if (employee.id) {
-                          emp[key] = employee[key];
-                        }
-                      }
-                    );
-                  });
-                });
-                return [...data];
-              });
-            });
-        });
-    },
-    [date]
-  );
-
   const updatePlanning = React.useCallback((input, date) => {
     // call update meyhod
     console.log(input, date);
@@ -554,7 +457,6 @@ function TableView() {
               Refresh
             </Button>
           </TableCell>
-          <TableCell width="80px"></TableCell>
           <TableCell colSpan={4} width="160px">
             <TextField 
               type="number"
@@ -604,7 +506,6 @@ function TableView() {
             colSpan={2}
             className={classes.firstColumnCell}
           ></TableCell>
-          <TableCell />
           {new Array(15).fill(0).map((_, i) => (
             <TableCell key={i} style={{ padding: "6px 16px" }}>
               <Typography style={{ textAlign: "center" }}>
@@ -616,44 +517,6 @@ function TableView() {
         </TableRow>
       </TableHead>
       <TableBody>
-        <TableRow>
-          <TableCell
-            colSpan={2}
-            className={classes.firstColumnCell}
-          ></TableCell>
-          <Tooltip arrow title="Capacité max">
-            <TableCell>
-              <Typography
-                style={{
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}
-              >
-                Capacité max
-              </Typography>
-            </TableCell>
-          </Tooltip>
-          {getColorFields().map((key, i) => (
-            <TableCell key={i} className={classes.inputCell}>
-              <TextField
-                variant="outlined"
-                id={`capacity_max_${i}`}
-                onChange={e => fetchColumn(key, `capacity_max_${i}`, e)}
-                type="number"
-                style={{ width: "100%" }}
-                InputProps={{
-                  inputProps: { min: 0, max: 100 },
-                  classes: {
-                    input: classes.input
-                  }
-                }}
-              />
-            </TableCell>
-          ))}
-          <TableCell />
-        </TableRow>
         {!isLoading ? (
           data.map((serivce, i) => (
             <TableService service={serivce} key={i} onChange={onChange} />
