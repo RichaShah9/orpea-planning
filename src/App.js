@@ -11,6 +11,8 @@ import {
   TableRow,
   TableBody,
   TextField,
+  FormControlLabel,
+  Select,
   CircularProgress
 } from "@material-ui/core";
 import {
@@ -19,7 +21,7 @@ import {
   Refresh as RefreshIcon,
   NavigateBefore as PreviousIcon,
   NavigateNext as NextIcon,
-  Add as AddIcon,
+  Add as AddIcon
 } from "@material-ui/icons";
 import cs from "classnames";
 
@@ -45,7 +47,7 @@ const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
 const useStyles = makeStyles(() => ({
   main: {
     overflow: "auto",
-    height: "100%",
+    height: "100%"
   },
   container: {
     padding: 20,
@@ -334,7 +336,10 @@ function TableView() {
                   }
                 : serviceList[serviceIndex];
 
-            const profileIndex = getProfileIndex(service.profiles, employee.profile.id);
+            const profileIndex = getProfileIndex(
+              service.profiles,
+              employee.profile.id
+            );
             const profile =
               profileIndex === -1
                 ? getProfile(employee.profile)
@@ -388,12 +393,15 @@ function TableView() {
     fetchData();
   }, [fetchData]);
 
-  const toggleDialog = React.useCallback((shouldRefresh = false) => {
-    setOpen(!open);
-    if(shouldRefresh === true) {
-      onRefresh();
-    }
-  }, [open, onRefresh])
+  const toggleDialog = React.useCallback(
+    (shouldRefresh = false) => {
+      setOpen(!open);
+      if (shouldRefresh === true) {
+        onRefresh();
+      }
+    },
+    [open, onRefresh]
+  );
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -422,20 +430,24 @@ function TableView() {
     });
   }, []);
 
-  const updatePlanning = React.useCallback((input, date) => {
-    const data = {
-      action: "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
-      data:{
-        value: Number(input),
-        date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD"),
-      }
-    }
-    employeeService.action(data).then(res => {
-      if(res && res.data && res.data[0].reload) {
-        onRefresh();
-      }
-    });
-  }, [onRefresh])
+  const updatePlanning = React.useCallback(
+    (input, date) => {
+      const data = {
+        action:
+          "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
+        data: {
+          value: Number(input),
+          date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+        }
+      };
+      employeeService.action(data).then(res => {
+        if (res && res.data && res.data[0].reload) {
+          onRefresh();
+        }
+      });
+    },
+    [onRefresh]
+  );
 
   React.useEffect(() => {
     fetchData();
@@ -468,14 +480,14 @@ function TableView() {
             </Button>
           </TableCell>
           <TableCell colSpan={4} width="160px">
-            <TextField 
+            <TextField
               type="number"
-              onKeyPress={(e) => {
-                if(e.key === 'Enter') {
+              onKeyPress={e => {
+                if (e.key === "Enter") {
                   updatePlanning(e.target.value, date);
                   e.preventDefault();
                 }
-              }} 
+              }}
             />
           </TableCell>
           <TableCell className={classes.tableCell} width="40px">
@@ -513,6 +525,7 @@ function TableView() {
         </TableRow>
         <TableRow>
           <TableCell
+            align="center"
             colSpan={2}
             className={classes.firstColumnCell}
           ></TableCell>
@@ -545,11 +558,7 @@ function TableView() {
           </div>
         )}
       </TableBody>
-      <LineForm 
-        handleClose={toggleDialog} 
-        open={open} 
-        date={date}
-      />
+      <LineForm handleClose={toggleDialog} open={open} date={date} />
     </Table>
   );
 }
