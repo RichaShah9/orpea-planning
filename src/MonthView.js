@@ -83,6 +83,24 @@ function getText(day) {
   return `d${day}Text`;
 }
 
+function getQueryData(month) {
+  const _month = moment(month, MONTH_FORMAT);
+  return {
+    criteria: [
+      {
+        fieldName: "monthPeriod.fromDate",
+        operator: "=",
+        value: _month.startOf("month").format("YYYY-MM-DD")
+      },
+      {
+        fieldName: "monthPeriod.toDate",
+        operator: "=",
+        value: _month.endOf("month").format("YYYY-MM-DD")
+      }
+    ]
+  }
+}
+
 function TableEmployee({
   employee,
   profile,
@@ -382,21 +400,6 @@ function MonthView() {
       ...getColorFields(days, "Text")
     ];
     const employeeFields = [...profileFields, "profile"];
-    const _month = moment(month, MONTH_FORMAT);
-    const data = {
-      criteria: [
-        {
-          fieldName: "monthPeriod.fromDate",
-          operator: "=",
-          value: _month.startOf("month").format("YYYY-MM-DD")
-        },
-        {
-          fieldName: "monthPeriod.toDate",
-          operator: "=",
-          value: _month.endOf("month").format("YYYY-MM-DD")
-        }
-      ]
-    };
     const serviceList = [];
     const getServiceIndex = serviceId => {
       return serviceList.findIndex(s => s.id === serviceId);
@@ -405,9 +408,9 @@ function MonthView() {
       return list.findIndex(p => p.id === profileId);
     };
 
-    profileMonthService.search({ fields: profileFields, data }).then(res => {
+    profileMonthService.search({ fields: profileFields, data: getQueryData(month) }).then(res => {
       employeeMonthService
-        .search({ fields: employeeFields, data })
+        .search({ fields: employeeFields, data: getQueryData(month) })
         .then(employeeResponse => {
           if (!res || !employeeResponse) {
             setLoading(false);
@@ -534,6 +537,54 @@ function MonthView() {
     },
     [open, onRefresh]
   );
+
+  const onInputChange = React.useCallback((input, key) => {
+    const textFieldName = getText(key);
+    const colorFieldName = `d${key}ColorSelect`;
+    const fields = [
+      "service",
+      "employmentContract",
+      "monthPeriod",
+      "profile",
+      textFieldName,
+      colorFieldName,
+    ];
+    //call update planning method
+    profileMonthService
+      .search({ fields, data: getQueryData(month) })
+      .then(res => {
+        employeeMonthService
+          .search({ fields, data: getQueryData(month) })
+          .then(employeeResponse => {
+            const profileData = res.data || [];
+            const employeeData = employeeResponse.data || [];
+            setData(data => {
+              profileData.forEach(profile => {
+                data.forEach(service => {
+                  const profileIndex = service.profiles.findIndex(
+                    p => p.id === profile.id
+                  );
+                  if (!service.profiles[profileIndex]) return;
+                  service.profiles[profileIndex][textFieldName] = profile[textFieldName];
+                  service.profiles[profileIndex][colorFieldName] = profile[colorFieldName];
+                  service.profiles[profileIndex].employees.forEach(
+                    (emp, i) => {
+                      const employee = employeeData.find(
+                        e => e.id === emp.id
+                      );
+                      if (employee.id) {
+                        emp[textFieldName] = employee[textFieldName];
+                        emp[colorFieldName] = employee[colorFieldName];
+                      }
+                    }
+                  );
+                });
+              });
+              return [...data];
+            });
+          });
+      })
+  }, [month])
 
   React.useEffect(() => {
     fetchData();
@@ -696,6 +747,11 @@ function MonthView() {
                 InputProps={{
                   classes: {
                     input: classes.input
+                  }
+                }}
+                onKeyPress={(e) => {
+                  if(e.key === 'Enter') {
+                    onInputChange(e.target.value, i+1);
                   }
                 }}
               />
