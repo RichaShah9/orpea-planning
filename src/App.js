@@ -556,7 +556,7 @@ function TableView() {
               startIcon={<AddIcon />}
               onClick={toggleDialog}
             >
-              Add Employee
+              Ajouter employé
             </Button>
           </TableCell>
           <TableCell className={classes.fixCell}></TableCell>
