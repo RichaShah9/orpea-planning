@@ -405,7 +405,7 @@ function MonthView() {
       return serviceList.findIndex(s => s.id === serviceId);
     };
     const getProfileIndex = (list, profileId) => {
-      return list.findIndex(p => p.id === profileId);
+      return list.findIndex(p => p.profileId === profileId);
     };
 
     profileMonthService.search({ fields: profileFields, data: getQueryData(month) }).then(res => {
@@ -423,6 +423,7 @@ function MonthView() {
             const profileObject = {
               ..._profile,
               name: profile.name,
+              profileId: profile.id,
               employees: []
             };
             delete profileObject.profile;
@@ -441,7 +442,7 @@ function MonthView() {
                   }
                 : serviceList[serviceIndex];
 
-            const profileIndex = getProfileIndex(service.profiles, employee.id);
+            const profileIndex = getProfileIndex(service.profiles, employee.profile.id);
             const profile =
               profileIndex === -1
                 ? getProfile(employee.profile)
