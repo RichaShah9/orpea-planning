@@ -11,8 +11,8 @@ import {
   TableRow,
   TableBody,
   CircularProgress,
-  FormControlLabel,
-  Select,
+  // FormControlLabel,
+  // Select,
   TextField,
   NativeSelect,
   InputLabel,
@@ -124,18 +124,18 @@ function getQueryData(month, establishment, planningVersion) {
       fieldName: "monthPeriod.toDate",
       operator: "=",
       value: _month.endOf("month").format("YYYY-MM-DD")
-    },
-  ]
-  if(establishment) {
+    }
+  ];
+  if (establishment) {
     _domain = `self.establishment.id = ${establishment}`;
   }
-  if(planningVersion) {
+  if (planningVersion) {
     _domain = `${_domain} and self.planningVersion = ${planningVersion}`;
   }
   return {
     _domain,
     criteria,
-    op: 'and',
+    op: "and"
   };
 }
 
@@ -376,8 +376,8 @@ function MonthView() {
   const [isLoading, setLoading] = React.useState(false);
   const [establishmentList, setEstablishmentList] = React.useState([]);
   const [versionList, setVersionList] = React.useState([]);
-  const [establishment, setEstablishment] = React.useState('');
-  const [version, setVersion] = React.useState('');
+  const [establishment, setEstablishment] = React.useState("");
+  const [version, setVersion] = React.useState("");
 
   const getDaysInMonth = React.useCallback(month => {
     return moment(month, MONTH_FORMAT).daysInMonth();
@@ -430,108 +430,117 @@ function MonthView() {
     return { weekColSpans, daySpans };
   }, []);
 
-  const fetchData = React.useCallback((establishment, planningVersion) => {
-    setLoading(true);
-    const days = getDaysInMonth(month);
-    const profileFields = [
-      "service",
-      "employmentContract",
-      "monthPeriod",
-      "profile",
-      "establishment",
-      "planningVersion",
-      ...getColorFields(days),
-      ...getColorFields(days, "Text")
-    ];
-    const employeeFields = [...profileFields, "profile"];
-    const serviceList = [];
-    const getServiceIndex = serviceId => {
-      return serviceList.findIndex(s => s.id === serviceId);
-    };
-    const getProfileIndex = (list, profileId, serviceId) => {
-      return list.findIndex(
-        p => p.profileId === profileId && p.serviceId === serviceId
-      );
-    };
+  const fetchData = React.useCallback(
+    (establishment, planningVersion) => {
+      setLoading(true);
+      const days = getDaysInMonth(month);
+      const profileFields = [
+        "service",
+        "employmentContract",
+        "monthPeriod",
+        "profile",
+        "establishment",
+        "planningVersion",
+        ...getColorFields(days),
+        ...getColorFields(days, "Text")
+      ];
+      const employeeFields = [...profileFields, "profile"];
+      const serviceList = [];
+      const getServiceIndex = serviceId => {
+        return serviceList.findIndex(s => s.id === serviceId);
+      };
+      const getProfileIndex = (list, profileId, serviceId) => {
+        return list.findIndex(
+          p => p.profileId === profileId && p.serviceId === serviceId
+        );
+      };
 
-    profileMonthService
-      .search({ fields: profileFields, data: getQueryData(month, establishment, planningVersion) })
-      .then(res => {
-        employeeMonthService
-          .search({ fields: employeeFields, data: getQueryData(month, establishment, planningVersion) })
-          .then(employeeResponse => {
-            if (!res || !employeeResponse) {
-              setLoading(false);
-              return;
-            }
-            const { data = [] } = res;
-            const { data: employeeData = [] } = employeeResponse;
-            const getProfile = (profile, service) => {
-              const _profile =
-                data.find(
-                  p =>
-                    p.profile.id === profile.id && p.service.id === service.id
-                ) || {};
-              const profileObject = {
-                ..._profile,
-                name: profile.name,
-                profileId: profile.id,
-                serviceId: service.id,
-                employees: []
+      profileMonthService
+        .search({
+          fields: profileFields,
+          data: getQueryData(month, establishment, planningVersion)
+        })
+        .then(res => {
+          employeeMonthService
+            .search({
+              fields: employeeFields,
+              data: getQueryData(month, establishment, planningVersion)
+            })
+            .then(employeeResponse => {
+              if (!res || !employeeResponse) {
+                setLoading(false);
+                return;
+              }
+              const { data = [] } = res;
+              const { data: employeeData = [] } = employeeResponse;
+              const getProfile = (profile, service) => {
+                const _profile =
+                  data.find(
+                    p =>
+                      p.profile.id === profile.id && p.service.id === service.id
+                  ) || {};
+                const profileObject = {
+                  ..._profile,
+                  name: profile.name,
+                  profileId: profile.id,
+                  serviceId: service.id,
+                  employees: []
+                };
+                delete profileObject.profile;
+                delete profileObject.service;
+                return profileObject;
               };
-              delete profileObject.profile;
-              delete profileObject.service;
-              return profileObject;
-            };
 
-            employeeData.forEach(employee => {
-              const serviceIndex = getServiceIndex(employee.service.id);
-              const service =
-                serviceIndex === -1
-                  ? {
-                      name: employee.service.name,
-                      id: employee.service.id,
-                      profiles: []
-                    }
-                  : serviceList[serviceIndex];
+              employeeData.forEach(employee => {
+                const serviceIndex = getServiceIndex(employee.service.id);
+                const service =
+                  serviceIndex === -1
+                    ? {
+                        name: employee.service.name,
+                        id: employee.service.id,
+                        profiles: []
+                      }
+                    : serviceList[serviceIndex];
 
-              const profileIndex = getProfileIndex(
-                service.profiles,
-                employee.profile.id,
-                employee.service.id
-              );
-              const profile =
-                profileIndex === -1
-                  ? getProfile(employee.profile, employee.service)
-                  : service.profiles[profileIndex];
-              const empObject = {
-                name:
-                  employee.employmentContract &&
-                  employee.employmentContract.fullName,
-                ...employee
-              };
-              delete empObject.employee;
-              delete empObject.profile;
-              delete empObject.service;
-              profile.employees.push({
-                ...empObject
+                const profileIndex = getProfileIndex(
+                  service.profiles,
+                  employee.profile.id,
+                  employee.service.id
+                );
+                const profile =
+                  profileIndex === -1
+                    ? getProfile(employee.profile, employee.service)
+                    : service.profiles[profileIndex];
+                const empObject = {
+                  name:
+                    employee.employmentContract &&
+                    employee.employmentContract.fullName,
+                  ...employee
+                };
+                delete empObject.employee;
+                delete empObject.profile;
+                delete empObject.service;
+                profile.employees.push({
+                  ...empObject
+                });
+                if (profileIndex !== -1) {
+                  service.profiles[profileIndex] = { ...profile };
+                } else {
+                  service.profiles.push({ ...profile });
+                }
+                if (serviceIndex !== -1) {
+                  serviceList[serviceIndex] = { ...service };
+                } else {
+                  serviceList.push({ ...service });
+                }
               });
-              if (profileIndex !== -1) {
-                service.profiles[profileIndex] = { ...profile };
-              } else {
-                service.profiles.push({ ...profile });
-              }
-              if (serviceIndex !== -1) {
-                serviceList[serviceIndex] = { ...service };
-              } else {
-                serviceList.push({ ...service });
-              }
+              setData(serviceList);
+              setLoading(false);
             });
-            setData(serviceList);
-            setLoading(false);
-          });
-      });
-  }, [month, getDaysInMonth]);
+        });
+    },
+    [month, getDaysInMonth]
+  );
 
   const onPrevious = React.useCallback(() => {
     setMonth(
@@ -658,28 +667,27 @@ function MonthView() {
     [month, establishment]
   );
 
-  const handleEstablishmentChange = React.useCallback((e) => {
+  const handleEstablishmentChange = React.useCallback(e => {
     setEstablishment(e.target.value);
   }, []);
 
-  const handleVersionChange = React.useCallback((e) => {
+  const handleVersionChange = React.useCallback(e => {
     setVersion(e.target.value);
   }, []);
 
   const fetchEstVersion = React.useCallback(() => {
-    if(establishment) {
+    if (establishment) {
       const data = {
-        _domain: `self.establishment.id = ${establishment}`,
-      }
-      versionService.search({fields: ['name'], data}).then(res => {
-        if(res && res.data) {
+        _domain: `self.establishment.id = ${establishment}`
+      };
+      versionService.search({ fields: ["name"], data }).then(res => {
+        if (res && res.data) {
           setVersionList([...res.data]);
         }
       });
     }
   }, [establishment]);
 
-  
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -689,12 +697,12 @@ function MonthView() {
   }, [fetchData]);
 
   React.useEffect(() => {
-    establishmentService.search({fields: ['name']}).then(res => {
-      if(res && res.data) {
+    establishmentService.search({ fields: ["name"] }).then(res => {
+      if (res && res.data) {
         setEstablishmentList([...res.data]);
       }
     });
-  }, [])
+  }, []);
 
   const classes = useStyles();
 
@@ -777,43 +785,45 @@ function MonthView() {
               className={classes.topCell}
               style={{ top: 25 }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-around'}}>
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="age-native-helper">Établissement</InputLabel>
-                <NativeSelect
-                  style={{minWidth: 125}}
-                  value={establishment}
-                  onChange={handleEstablishmentChange}
-                  inputProps={{
-                    name: 'age',
-                    id: 'age-native-helper',
-                  }}
-                >
-                  <option aria-label="None" value=""></option>
-                  {
-                    establishmentList.map((est, i) => (
-                      <option key={i} value={est.id}>{est.name}</option>
-                    ))
-                  }
-                </NativeSelect>
+              <div style={{ display: "flex", justifyContent: "space-around" }}>
+                <FormControl className={classes.formControl}>
+                  <InputLabel htmlFor="age-native-helper">
+                    Établissement
+                  </InputLabel>
+                  <NativeSelect
+                    style={{ minWidth: 125 }}
+                    value={establishment}
+                    onChange={handleEstablishmentChange}
+                    inputProps={{
+                      name: "age",
+                      id: "age-native-helper"
+                    }}
+                  >
+                    <option aria-label="None" value=""></option>
+                    {establishmentList.map((est, i) => (
+                      <option key={i} value={est.id}>
+                        {est.name}
+                      </option>
+                    ))}
+                  </NativeSelect>
                 </FormControl>
                 <FormControl className={classes.formControl}>
                   <InputLabel htmlFor="age-native-helper">Version</InputLabel>
                   <NativeSelect
-                    style={{minWidth: 125}}
+                    style={{ minWidth: 125 }}
                     value={version}
                     onChange={handleVersionChange}
                     inputProps={{
-                      name: 'age',
-                      id: 'age-native-helper',
+                      name: "age",
+                      id: "age-native-helper"
                     }}
                   >
                     <option aria-label="None" value="" />
-                    {
-                      versionList.map((ver, i) => (
-                        <option key={i} value={ver.id}>{ver.name}</option>
-                      ))
-                    }
+                    {versionList.map((ver, i) => (
+                      <option key={i} value={ver.id}>
+                        {ver.name}
+                      </option>
+                    ))}
                   </NativeSelect>
                 </FormControl>
               </div>
@@ -865,46 +875,9 @@ function MonthView() {
             <TableCell
               colSpan={2}
               className={classes.topCell}
-              style={{ top: 50 }}
-            ></TableCell>
-            {initials.map((c, i) => (
-              <TableCell
-                className={classes.fixCell}
-                key={i}
-                style={
-                  daySpans.includes(i + 1)
-                    ? {
-                        borderRight: "1px solid black",
-                        boxSizing: "border-box",
-                        top: 50
-                      }
-                    : { top: 50 }
-                }
-              >
-                <Typography align="center">{c}</Typography>
-              </TableCell>
-            ))}
-            {new Array(31 - days).fill(0).map((_, i) => (
-              <TableCell
-                className={classes.fixCell}
-                style={{ top: 50 }}
-                key={i}
-              ></TableCell>
-            ))}
-            <TableCell
-              className={classes.fixCell}
-              style={{ top: 50 }}
-            ></TableCell>
-          </TableRow>
-
-          {/* Date */}
-          <TableRow>
-            <TableCell
-              colSpan={2}
-              className={classes.topCell}
               style={{ top: 75 }}
             ></TableCell>
-            {new Array(days).fill(0).map((_, i) => (
+            {initials.map((c, i) => (
               <TableCell
                 className={classes.fixCell}
                 key={i}
@@ -918,19 +891,56 @@ function MonthView() {
                     : { top: 75 }
                 }
               >
+                <Typography align="center">{c}</Typography>
+              </TableCell>
+            ))}
+            {new Array(31 - days).fill(0).map((_, i) => (
+              <TableCell
+                className={classes.fixCell}
+                style={{ top: 75 }}
+                key={i}
+              ></TableCell>
+            ))}
+            <TableCell
+              className={classes.fixCell}
+              style={{ top: 75 }}
+            ></TableCell>
+          </TableRow>
+
+          {/* Date */}
+          <TableRow>
+            <TableCell
+              colSpan={2}
+              className={classes.topCell}
+              style={{ top: 100 }}
+            ></TableCell>
+            {new Array(days).fill(0).map((_, i) => (
+              <TableCell
+                className={classes.fixCell}
+                key={i}
+                style={
+                  daySpans.includes(i + 1)
+                    ? {
+                        borderRight: "1px solid black",
+                        boxSizing: "border-box",
+                        top: 100
+                      }
+                    : { top: 100 }
+                }
+              >
                 <Typography align="center">{i + 1}</Typography>
               </TableCell>
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
               <TableCell
-                style={{ top: 75 }}
+                style={{ top: 100 }}
                 className={classes.fixCell}
                 key={i}
                 width="2.419%"
               ></TableCell>
             ))}
             <TableCell
-              style={{ top: 75 }}
+              style={{ top: 100 }}
               className={classes.fixCell}
             ></TableCell>
           </TableRow>
@@ -938,7 +948,7 @@ function MonthView() {
             <TableCell
               colSpan={2}
               className={classes.topCell}
-              style={{ top: 100 }}
+              style={{ top: 125 }}
             ></TableCell>
             {new Array(days).fill(0).map((_, i) => (
               <TableCell
@@ -949,9 +959,9 @@ function MonthView() {
                     ? {
                         borderRight: "1px solid black",
                         boxSizing: "border-box",
-                        top: 100
+                        top: 125
                       }
-                    : { top: 100 }
+                    : { top: 125 }
                 }
               >
                 <TextField
@@ -973,14 +983,14 @@ function MonthView() {
             ))}
             {new Array(31 - days).fill(0).map((_, i) => (
               <TableCell
-                style={{ top: 100 }}
+                style={{ top: 125 }}
                 className={classes.fixCell}
                 key={i}
                 width="2.419%"
               ></TableCell>
             ))}
             <TableCell
-              style={{ top: 100 }}
+              style={{ top: 125 }}
               className={classes.fixCell}
             ></TableCell>
           </TableRow>
@@ -1032,7 +1042,7 @@ function MonthView() {
     versionList,
     version,
     handleEstablishmentChange,
-    handleVersionChange,
+    handleVersionChange
   ]);
 
   return (
