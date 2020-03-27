@@ -9,6 +9,7 @@ import {
   Button,
   Typography
 } from "@material-ui/core";
+import moment from 'moment';
 import AxelorService from "./service/axelor.rest";
 
 const employmentContractService = new AxelorService({
@@ -22,7 +23,7 @@ function LineForm({ handleClose, open, fromDate, date }) {
   const [services, setServices] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [contract, setContract] = React.useState({
-    employmentContractId: "",
+    contractId: "",
     serviceId: ""
   });
 
@@ -58,7 +59,7 @@ function LineForm({ handleClose, open, fromDate, date }) {
       ...contract
     };
     if (date) {
-      context["lineDate"] = date;
+      context["lineDate"] = moment(date, "DD-MM-YYYY").format("YYYY-MM-DD");
     } else {
       context["lineMonth"] = fromDate;
     }
@@ -86,10 +87,10 @@ function LineForm({ handleClose, open, fromDate, date }) {
       <DialogContent>
         <Typography style={{ fontWeight: "bold" }}>Contrat employé</Typography>
         <Select
-          value={contract.employmentContractId}
+          value={contract.contractId}
           onChange={handleChange}
           style={{ width: "100%" }}
-          name="employmentContractId"
+          name="contractId"
         >
           {contracts.map((c, i) => (
             <MenuItem key={i} value={c.id}>
