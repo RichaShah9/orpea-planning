@@ -107,16 +107,21 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
+function getHourFields(text) {
+  return new Array(15).fill(0).map((_, i) => `h${i + 8}${text}`);
+}
+
 function getColorFields() {
-  const fields = [];
-  for (let i = 8; i <= 22; i++) {
-    fields.push(`h${i}ColorSelect`);
-  }
-  return fields;
+  return getHourFields("ColorSelect");
+}
+
+function getTextFields() {
+  return getHourFields("Text");
 }
 
 function TableEmployee({ employee, profile, hidden, onChange }) {
   const classes = useStyles();
+  console.log(employee);
   const onEmployeeChange = React.useCallback(
     (key, value) => {
       employeeService
@@ -154,6 +159,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
           <Popup
             TableCell={TableCell}
             key={i}
+            text={employee[`h${i + 8}Text`]}
             color={employee[key]}
             profile={profile}
             employee={employee}
@@ -227,6 +233,7 @@ function TableProfile({ profile, hidden, onChange }) {
           <Popup
             TableCell={TableCell}
             key={i}
+            text={profile[`h${i + 8}Text`]}
             color={profile[key]}
             profile={profile}
             onColorChange={color => onProfileChange(key, color)}
@@ -299,8 +306,8 @@ function TableView() {
   const [data, setData] = React.useState([]);
   const [establishmentList, setEstablishmentList] = React.useState([]);
   const [versionList, setVersionList] = React.useState([]);
-  const [establishment, setEstablishment] = React.useState('');
-  const [version, setVersion] = React.useState('');
+  const [establishment, setEstablishment] = React.useState("");
+  const [version, setVersion] = React.useState("");
   const classes = useStyles();
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
@@ -308,117 +315,128 @@ function TableView() {
   const [isLoading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const fetchData = React.useCallback((establishment, version) => {
-    setLoading(true);
-    const profileFields = [
-      "service",
-      "employmentContract",
-      "dayDate",
-      "profile",
-      "establishment",
-      "planningVersion",
-      ...getColorFields()
-    ];
-    const employeeFields = [...profileFields, "profile"];
-    let _domain = null;
-    if(establishment) {
-      _domain = `self.establishment.id = ${establishment}`;
-    }
-    if(version) {
-      _domain = `${_domain} and self.planningVersion = ${version}`;
-    }
-    const data = {
-      criteria: [
-        {
-          fieldName: "dayDate",
-          operator: "=",
-          value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
-        }
-      ],
-      _domain,
-      op: 'and',
-    };
-    const serviceList = [];
-    const getServiceIndex = serviceId => {
-      return serviceList.findIndex(s => s.id === serviceId);
-    };
-    const getProfileIndex = (list, profileId, serviceId) => {
-      return list.findIndex(p => p.profileId === profileId && p.serviceId === serviceId);
-    };
-
-    profileService.search({ fields: profileFields, data }).then(res => {
-      employeeService
-        .search({ fields: employeeFields, data })
-        .then(employeeResponse => {
-          if (!res || !employeeResponse) {
-            setLoading(false);
-            return;
+  const fetchData = React.useCallback(
+    (establishment, version) => {
+      setLoading(true);
+      const profileFields = [
+        "service",
+        "employmentContract",
+        "dayDate",
+        "profile",
+        "establishment",
+        "planningVersion",
+        ...getColorFields(),
+        ...getTextFields()
+      ];
+      const employeeFields = [...profileFields, "profile"];
+      let _domain = null;
+      if (establishment) {
+        _domain = `self.establishment.id = ${establishment}`;
+      }
+      if (version) {
+        _domain = `${_domain} and self.planningVersion = ${version}`;
+      }
+      const data = {
+        criteria: [
+          {
+            fieldName: "dayDate",
+            operator: "=",
+            value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
           }
-          const { data = [] } = res;
-          const { data: employeeData = [] } = employeeResponse;
-          const getProfile = (profile, service) => {
-            const _profile = data.find(p => p.profile && p.profile.id === profile.id && p.service.id === service.id) || {};
-            const profileObject = {
-              ..._profile,
-              name: profile.name,
-              profileId: profile.id,
-              serviceId: service.id,
-              employees: []
-            };
-            delete profileObject.profile;
-            delete profileObject.service;
-            return profileObject;
-          };
+        ],
+        _domain,
+        op: "and"
+      };
+      const serviceList = [];
+      const getServiceIndex = serviceId => {
+        return serviceList.findIndex(s => s.id === serviceId);
+      };
+      const getProfileIndex = (list, profileId, serviceId) => {
+        return list.findIndex(
+          p => p.profileId === profileId && p.serviceId === serviceId
+        );
+      };
 
-          employeeData.forEach(employee => {
-            const serviceIndex = getServiceIndex(employee.service.id);
-            const service =
-              serviceIndex === -1
-                ? {
-                    name: employee.service.name,
-                    id: employee.service.id,
-                    profiles: []
-                  }
-                : serviceList[serviceIndex];
-
-            const profileIndex = getProfileIndex(
-              service.profiles,
-              employee.profile.id,
-              employee.service.id
-            );
-            const profile =
-              profileIndex === -1
-                ? getProfile(employee.profile, employee.service)
-                : service.profiles[profileIndex];
-            const empObject = {
-              name:
-                employee.employmentContract &&
-                employee.employmentContract.fullName,
-              ...employee
+      profileService.search({ fields: profileFields, data }).then(res => {
+        employeeService
+          .search({ fields: employeeFields, data })
+          .then(employeeResponse => {
+            if (!res || !employeeResponse) {
+              setLoading(false);
+              return;
+            }
+            const { data = [] } = res;
+            const { data: employeeData = [] } = employeeResponse;
+            const getProfile = (profile, service) => {
+              const _profile =
+                data.find(
+                  p =>
+                    p.profile &&
+                    p.profile.id === profile.id &&
+                    p.service.id === service.id
+                ) || {};
+              const profileObject = {
+                ..._profile,
+                name: profile.name,
+                profileId: profile.id,
+                serviceId: service.id,
+                employees: []
+              };
+              delete profileObject.profile;
+              delete profileObject.service;
+              return profileObject;
             };
-            delete empObject.employee;
-            delete empObject.profile;
-            delete empObject.service;
-            profile.employees.push({
-              ...empObject
+
+            employeeData.forEach(employee => {
+              const serviceIndex = getServiceIndex(employee.service.id);
+              const service =
+                serviceIndex === -1
+                  ? {
+                      name: employee.service.name,
+                      id: employee.service.id,
+                      profiles: []
+                    }
+                  : serviceList[serviceIndex];
+
+              const profileIndex = getProfileIndex(
+                service.profiles,
+                employee.profile.id,
+                employee.service.id
+              );
+              const profile =
+                profileIndex === -1
+                  ? getProfile(employee.profile, employee.service)
+                  : service.profiles[profileIndex];
+              const empObject = {
+                name:
+                  employee.employmentContract &&
+                  employee.employmentContract.fullName,
+                ...employee
+              };
+              delete empObject.employee;
+              delete empObject.profile;
+              delete empObject.service;
+              profile.employees.push({
+                ...empObject
+              });
+              if (profileIndex !== -1) {
+                service.profiles[profileIndex] = { ...profile };
+              } else {
+                service.profiles.push({ ...profile });
+              }
+              if (serviceIndex !== -1) {
+                serviceList[serviceIndex] = { ...service };
+              } else {
+                serviceList.push({ ...service });
+              }
             });
-            if (profileIndex !== -1) {
-              service.profiles[profileIndex] = { ...profile };
-            } else {
-              service.profiles.push({ ...profile });
-            }
-            if (serviceIndex !== -1) {
-              serviceList[serviceIndex] = { ...service };
-            } else {
-              serviceList.push({ ...service });
-            }
+            setData(serviceList);
+            setLoading(false);
           });
-          console.log(serviceList);
-          setData(serviceList);
-          setLoading(false);
-        });
-    });
-  }, [date]);
+      });
+    },
+    [date]
+  );
 
   const onPrevious = React.useCallback(() => {
     setDate(
@@ -471,7 +489,6 @@ function TableView() {
         profile[record.key] = record.value;
         profile["version"] = record.version;
       }
-      console.log("onCHange", profile);
       service.profiles[profileIndex] = { ...profile };
       data[serviceIndex] = { ...service };
       return [...data];
@@ -498,44 +515,42 @@ function TableView() {
     [onRefresh, establishment]
   );
 
-  const handleEstablishmentChange = React.useCallback((e) => {
+  const handleEstablishmentChange = React.useCallback(e => {
     setEstablishment(e.target.value);
   }, []);
 
-  const handleVersionChange = React.useCallback((e) => {
+  const handleVersionChange = React.useCallback(e => {
     setVersion(e.target.value);
   }, []);
 
   const fetchEstVersion = React.useCallback(() => {
-    if(establishment) {
+    if (establishment) {
       const data = {
-        _domain: `self.establishment.id = ${establishment}`,
-      }
-      versionService.search({fields: ['name'], data}).then(res => {
-        if(res && res.data) {
+        _domain: `self.establishment.id = ${establishment}`
+      };
+      versionService.search({ fields: ["name"], data }).then(res => {
+        if (res && res.data) {
           setVersionList([...res.data]);
         }
       });
     }
   }, [establishment]);
 
-  
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
-
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   React.useEffect(() => {
-    establishmentService.search({fields: ['name']}).then(res => {
-      if(res && res.data) {
+    establishmentService.search({ fields: ["name"] }).then(res => {
+      if (res && res.data) {
         setEstablishmentList([...res.data]);
       }
     });
-  }, [])
+  }, []);
 
   return (
     <Table
@@ -638,47 +653,48 @@ function TableView() {
             }}
             width="300px"
           >
-
-            <div style={{ display: 'flex', justifyContent: 'space-around'}}>
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
               <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="age-native-helper">Établissement</InputLabel>
+                <InputLabel htmlFor="age-native-helper">
+                  Établissement
+                </InputLabel>
                 <NativeSelect
-                  style={{minWidth: 125}}
+                  style={{ minWidth: 125 }}
                   value={establishment}
                   onChange={handleEstablishmentChange}
                   inputProps={{
-                    name: 'age',
-                    id: 'age-native-helper',
+                    name: "age",
+                    id: "age-native-helper"
                   }}
                 >
                   <option aria-label="None" value=""></option>
-                  {
-                    establishmentList.map((est, i) => (
-                      <option key={i} value={est.id}>{est.name}</option>
-                    ))
-                  }
+                  {establishmentList.map((est, i) => (
+                    <option key={i} value={est.id}>
+                      {est.name}
+                    </option>
+                  ))}
                 </NativeSelect>
-                </FormControl>
-                <FormControl className={classes.formControl}>
-                  <InputLabel htmlFor="age-native-helper">Version</InputLabel>
-                  <NativeSelect
-                    style={{minWidth: 125}}
-                    value={version}
-                    onChange={handleVersionChange}
-                    inputProps={{
-                      name: 'age',
-                      id: 'age-native-helper',
-                    }}
-                  >
-                    <option aria-label="None" value="" />
-                    {
-                      versionList.map((ver, i) => (
-                        <option key={i} value={ver.id}>{ver.name}</option>
-                      ))
-                    }
-                  </NativeSelect>
-                </FormControl>
-              </div>
+              </FormControl>
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="age-native-helper">Version</InputLabel>
+                <NativeSelect
+                  style={{ minWidth: 125 }}
+                  value={version}
+                  onChange={handleVersionChange}
+                  inputProps={{
+                    name: "age",
+                    id: "age-native-helper"
+                  }}
+                >
+                  <option aria-label="None" value="" />
+                  {versionList.map((ver, i) => (
+                    <option key={i} value={ver.id}>
+                      {ver.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </FormControl>
+            </div>
           </TableCell>
           {new Array(15).fill(0).map((_, i) => (
             <TableCell
