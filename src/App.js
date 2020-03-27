@@ -13,7 +13,10 @@ import {
   TextField,
   // FormControlLabel,
   // Select,
-  CircularProgress
+  CircularProgress,
+  NativeSelect,
+  InputLabel,
+  FormControl
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -36,6 +39,12 @@ const profileService = new AxelorService({
 });
 const employeeService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeDay"
+});
+const establishmentService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.Establishment"
+});
+const versionService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.PlanningVersion"
 });
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
@@ -288,6 +297,10 @@ function TableService({ service, onChange }) {
 
 function TableView() {
   const [data, setData] = React.useState([]);
+  const [establishmentList, setEstablishmentList] = React.useState([]);
+  const [versionList, setVersionList] = React.useState([]);
+  const [establishment, setEstablishment] = React.useState('');
+  const [version, setVersion] = React.useState('');
   const classes = useStyles();
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
@@ -295,16 +308,25 @@ function TableView() {
   const [isLoading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const fetchData = React.useCallback(() => {
+  const fetchData = React.useCallback((establishment, version) => {
     setLoading(true);
     const profileFields = [
       "service",
       "employmentContract",
       "dayDate",
       "profile",
+      "establishment",
+      "planningVersion",
       ...getColorFields()
     ];
     const employeeFields = [...profileFields, "profile"];
+    let _domain = null;
+    if(establishment) {
+      _domain = `self.establishment.id = ${establishment}`;
+    }
+    if(version) {
+      _domain = `${_domain} and self.planningVersion = ${version}`;
+    }
     const data = {
       criteria: [
         {
@@ -312,7 +334,9 @@ function TableView() {
           operator: "=",
           value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
         }
-      ]
+      ],
+      _domain,
+      op: 'and',
     };
     const serviceList = [];
     const getServiceIndex = serviceId => {
@@ -333,7 +357,7 @@ function TableView() {
           const { data = [] } = res;
           const { data: employeeData = [] } = employeeResponse;
           const getProfile = (profile, service) => {
-            const _profile = data.find(p => p.profile.id === profile.id && p.service.id === service.id) || {};
+            const _profile = data.find(p => p.profile && p.profile.id === profile.id && p.service.id === service.id) || {};
             const profileObject = {
               ..._profile,
               name: profile.name,
@@ -413,8 +437,8 @@ function TableView() {
   }, [date]);
 
   const onRefresh = React.useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(establishment, version);
+  }, [fetchData, establishment, version]);
 
   const toggleDialog = React.useCallback(
     (shouldRefresh = false) => {
@@ -460,6 +484,7 @@ function TableView() {
         action:
           "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
         data: {
+          establishmentId: establishment,
           value: Number(input),
           date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
         }
@@ -470,12 +495,47 @@ function TableView() {
         }
       });
     },
-    [onRefresh]
+    [onRefresh, establishment]
   );
+
+  const handleEstablishmentChange = React.useCallback((e) => {
+    setEstablishment(e.target.value);
+  }, []);
+
+  const handleVersionChange = React.useCallback((e) => {
+    setVersion(e.target.value);
+  }, []);
+
+  const fetchEstVersion = React.useCallback(() => {
+    if(establishment) {
+      const data = {
+        _domain: `self.establishment.id = ${establishment}`,
+      }
+      versionService.search({fields: ['name'], data}).then(res => {
+        if(res && res.data) {
+          setVersionList([...res.data]);
+        }
+      });
+    }
+  }, [establishment]);
+
+  
+  React.useEffect(() => {
+    fetchEstVersion();
+  }, [fetchEstVersion]);
+
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  React.useEffect(() => {
+    establishmentService.search({fields: ['name']}).then(res => {
+      if(res && res.data) {
+        setEstablishmentList([...res.data]);
+      }
+    });
+  }, [])
 
   return (
     <Table
@@ -577,7 +637,49 @@ function TableView() {
               top: 25
             }}
             width="300px"
-          ></TableCell>
+          >
+
+            <div style={{ display: 'flex', justifyContent: 'space-around'}}>
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="age-native-helper">Établissement</InputLabel>
+                <NativeSelect
+                  style={{minWidth: 125}}
+                  value={establishment}
+                  onChange={handleEstablishmentChange}
+                  inputProps={{
+                    name: 'age',
+                    id: 'age-native-helper',
+                  }}
+                >
+                  <option aria-label="None" value=""></option>
+                  {
+                    establishmentList.map((est, i) => (
+                      <option key={i} value={est.id}>{est.name}</option>
+                    ))
+                  }
+                </NativeSelect>
+                </FormControl>
+                <FormControl className={classes.formControl}>
+                  <InputLabel htmlFor="age-native-helper">Version</InputLabel>
+                  <NativeSelect
+                    style={{minWidth: 125}}
+                    value={version}
+                    onChange={handleVersionChange}
+                    inputProps={{
+                      name: 'age',
+                      id: 'age-native-helper',
+                    }}
+                  >
+                    <option aria-label="None" value="" />
+                    {
+                      versionList.map((ver, i) => (
+                        <option key={i} value={ver.id}>{ver.name}</option>
+                      ))
+                    }
+                  </NativeSelect>
+                </FormControl>
+              </div>
+          </TableCell>
           {new Array(15).fill(0).map((_, i) => (
             <TableCell
               key={i}
