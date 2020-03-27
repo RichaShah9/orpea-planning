@@ -23,7 +23,7 @@ function LineForm({ handleClose, open, fromDate, date }) {
   const [services, setServices] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [contract, setContract] = React.useState({
-    contractId: "",
+    employmentContractId: "",
     serviceId: ""
   });
 
@@ -87,10 +87,10 @@ function LineForm({ handleClose, open, fromDate, date }) {
       <DialogContent>
         <Typography style={{ fontWeight: "bold" }}>Contrat employé</Typography>
         <Select
-          value={contract.contractId}
+          value={contract.employmentContractId}
           onChange={handleChange}
           style={{ width: "100%", marginBottom: 10 }}
-          name="contractId"
+          name="employmentContractId"
         >
           {contracts.map((c, i) => (
             <MenuItem key={i} value={c.id}>
