@@ -13,7 +13,10 @@ import {
   CircularProgress,
   FormControlLabel,
   Select,
-  TextField
+  TextField,
+  NativeSelect,
+  InputLabel,
+  FormControl
 } from "@material-ui/core";
 import {
   AddCircle,
@@ -42,6 +45,12 @@ const profileMonthService = new AxelorService({
 });
 const employeeMonthService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeMonth"
+});
+const establishmentService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.Establishment"
+});
+const versionService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.PlanningVersion"
 });
 
 const useStyles = makeStyles(theme => ({
@@ -102,21 +111,31 @@ function getText(day) {
   return `d${day}Text`;
 }
 
-function getQueryData(month) {
+function getQueryData(month, establishment, planningVersion) {
   const _month = moment(month, MONTH_FORMAT);
+  let _domain = null;
+  const criteria = [
+    {
+      fieldName: "monthPeriod.fromDate",
+      operator: "=",
+      value: _month.startOf("month").format("YYYY-MM-DD")
+    },
+    {
+      fieldName: "monthPeriod.toDate",
+      operator: "=",
+      value: _month.endOf("month").format("YYYY-MM-DD")
+    },
+  ]
+  if(establishment) {
+    _domain = `self.establishment.id = ${establishment}`;
+  }
+  if(planningVersion) {
+    _domain = `${_domain} and self.planningVersion = ${planningVersion}`;
+  }
   return {
-    criteria: [
-      {
-        fieldName: "monthPeriod.fromDate",
-        operator: "=",
-        value: _month.startOf("month").format("YYYY-MM-DD")
-      },
-      {
-        fieldName: "monthPeriod.toDate",
-        operator: "=",
-        value: _month.endOf("month").format("YYYY-MM-DD")
-      }
-    ]
+    _domain,
+    criteria,
+    op: 'and',
   };
 }
 
@@ -355,6 +374,10 @@ function MonthView() {
   const [data, setData] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const [isLoading, setLoading] = React.useState(false);
+  const [establishmentList, setEstablishmentList] = React.useState([]);
+  const [versionList, setVersionList] = React.useState([]);
+  const [establishment, setEstablishment] = React.useState('');
+  const [version, setVersion] = React.useState('');
 
   const getDaysInMonth = React.useCallback(month => {
     return moment(month, MONTH_FORMAT).daysInMonth();
@@ -407,7 +430,7 @@ function MonthView() {
     return { weekColSpans, daySpans };
   }, []);
 
-  const fetchData = React.useCallback(() => {
+  const fetchData = React.useCallback((establishment, planningVersion) => {
     setLoading(true);
     const days = getDaysInMonth(month);
     const profileFields = [
@@ -415,6 +438,8 @@ function MonthView() {
       "employmentContract",
       "monthPeriod",
       "profile",
+      "establishment",
+      "planningVersion",
       ...getColorFields(days),
       ...getColorFields(days, "Text")
     ];
@@ -430,10 +455,10 @@ function MonthView() {
     };
 
     profileMonthService
-      .search({ fields: profileFields, data: getQueryData(month) })
+      .search({ fields: profileFields, data: getQueryData(month, establishment, planningVersion) })
       .then(res => {
         employeeMonthService
-          .search({ fields: employeeFields, data: getQueryData(month) })
+          .search({ fields: employeeFields, data: getQueryData(month, establishment, planningVersion) })
           .then(employeeResponse => {
             if (!res || !employeeResponse) {
               setLoading(false);
@@ -525,8 +550,8 @@ function MonthView() {
   }, [month]);
 
   const onRefresh = React.useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(establishment, version);
+  }, [fetchData, establishment, version]);
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -582,6 +607,7 @@ function MonthView() {
         action:
           "com.axelor.apps.orpea.planning.web.EmploymentContractController:updatePlanning",
         data: {
+          establishmentId: establishment,
           value: Number(input),
           date: moment(month, MONTH_FORMAT)
             .startOf("month")
@@ -629,12 +655,46 @@ function MonthView() {
         }
       });
     },
-    [month]
+    [month, establishment]
   );
+
+  const handleEstablishmentChange = React.useCallback((e) => {
+    setEstablishment(e.target.value);
+  }, []);
+
+  const handleVersionChange = React.useCallback((e) => {
+    setVersion(e.target.value);
+  }, []);
+
+  const fetchEstVersion = React.useCallback(() => {
+    if(establishment) {
+      const data = {
+        _domain: `self.establishment.id = ${establishment}`,
+      }
+      versionService.search({fields: ['name'], data}).then(res => {
+        if(res && res.data) {
+          setVersionList([...res.data]);
+        }
+      });
+    }
+  }, [establishment]);
+
+  
+  React.useEffect(() => {
+    fetchEstVersion();
+  }, [fetchEstVersion]);
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  React.useEffect(() => {
+    establishmentService.search({fields: ['name']}).then(res => {
+      if(res && res.data) {
+        setEstablishmentList([...res.data]);
+      }
+    });
+  }, [])
 
   const classes = useStyles();
 
@@ -717,6 +777,46 @@ function MonthView() {
               className={classes.topCell}
               style={{ top: 25 }}
             >
+              <div style={{ display: 'flex', justifyContent: 'space-around'}}>
+              <FormControl className={classes.formControl}>
+                <InputLabel htmlFor="age-native-helper">Établissement</InputLabel>
+                <NativeSelect
+                  style={{minWidth: 125}}
+                  value={establishment}
+                  onChange={handleEstablishmentChange}
+                  inputProps={{
+                    name: 'age',
+                    id: 'age-native-helper',
+                  }}
+                >
+                  <option aria-label="None" value=""></option>
+                  {
+                    establishmentList.map((est, i) => (
+                      <option key={i} value={est.id}>{est.name}</option>
+                    ))
+                  }
+                </NativeSelect>
+                </FormControl>
+                <FormControl className={classes.formControl}>
+                  <InputLabel htmlFor="age-native-helper">Version</InputLabel>
+                  <NativeSelect
+                    style={{minWidth: 125}}
+                    value={version}
+                    onChange={handleVersionChange}
+                    inputProps={{
+                      name: 'age',
+                      id: 'age-native-helper',
+                    }}
+                  >
+                    <option aria-label="None" value="" />
+                    {
+                      versionList.map((ver, i) => (
+                        <option key={i} value={ver.id}>{ver.name}</option>
+                      ))
+                    }
+                  </NativeSelect>
+                </FormControl>
+              </div>
               {/* <Button
               style={{ padding: "0px 2px" }}
               size="small"
@@ -926,7 +1026,13 @@ function MonthView() {
     getDaysInMonth,
     getDaysInititals,
     getWeekColSpans,
-    toggleDialog
+    toggleDialog,
+    establishment,
+    establishmentList,
+    versionList,
+    version,
+    handleEstablishmentChange,
+    handleVersionChange,
   ]);
 
   return (
