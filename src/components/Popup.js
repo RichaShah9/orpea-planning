@@ -111,7 +111,8 @@ function Popup({
   TableCell,
   text = "",
   style = {},
-  disablePopup
+  disablePopup,
+  onAbsent,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -138,12 +139,16 @@ function Popup({
     [onColorChangeProp]
   );
 
+  
   React.useEffect(() => {
     setColor(colorProp);
   }, [colorProp]);
-
+  
   const [checked, setChecked] = React.useState(false);
   const [selectValue, setSelectValue] = React.useState("Congé payé");
+  const onValidate = React.useCallback(() => {
+    onAbsent(selectValue)
+  }, [onAbsent, selectValue])
 
   let tooltipTitle = "";
   if (profile) tooltipTitle += `Profile: ${profile.name}; `;
@@ -184,7 +189,8 @@ function Popup({
           onChecked={setChecked}
           selectValue={selectValue}
           onSelect={setSelectValue}
-          disableCheckbox
+          disableCheckbox={colorProp !== '#7fbc64'}
+          onValidate={onValidate}
         />
       </Popover>
     </>

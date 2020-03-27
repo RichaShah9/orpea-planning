@@ -145,7 +145,8 @@ function TableEmployee({
   hidden,
   onChange,
   daySpans,
-  days
+  days,
+  onAbsent
 }) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
@@ -199,6 +200,7 @@ function TableEmployee({
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
+            onAbsent={(value) => onAbsent(employee.id, i, value)}
           />
         ))}
         {new Array(31 - days).fill(0).map((_, i) => (
@@ -210,7 +212,7 @@ function TableEmployee({
   );
 }
 
-function TableProfile({ profile, hidden, onChange, daySpans, days }) {
+function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -284,6 +286,7 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
             text={profile[getText(i)]}
             profile={profile}
             onColorChange={color => onProfileChange(key, color)}
+            disablePopup={true}
           />
         ))}
         {new Array(31 - days).fill(0).map((_, i) => (
@@ -300,13 +303,14 @@ function TableProfile({ profile, hidden, onChange, daySpans, days }) {
           hidden={collapsed || hidden}
           days={days}
           onChange={params => onChange({ ...params, profileId: profile.id })}
+          onAbsent={onAbsent}
         />
       ))}
     </>
   );
 }
 
-function TableService({ service, onChange, daySpans, days }) {
+function TableService({ service, onChange, daySpans, days, onAbsent }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
 
@@ -356,6 +360,7 @@ function TableService({ service, onChange, daySpans, days }) {
           daySpans={daySpans}
           hidden={collapsed}
           days={days}
+          onAbsent={onAbsent}
         />
       ))}
     </>
@@ -691,6 +696,26 @@ function MonthView() {
     }
   }, [establishment]);
 
+  const onAbsent = React.useCallback((employeeId, dateNumber, leaveReasonSelect) => {
+    const data = {
+      action:
+        "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceMonthPlanning",
+      data: {
+        employeeId,
+        leaveReasonSelect,
+        date: moment(month, MONTH_FORMAT)
+          .startOf('month')
+          .add(dateNumber, "days")
+          .format("YYYY-MM-DD")
+      }
+    };
+    console.log(data, dateNumber);
+    employeeMonthService.action(data).then(res => {
+      console.log(res);
+      onRefresh();
+    })
+  }, [onRefresh, month])
+
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -1008,6 +1033,7 @@ function MonthView() {
                 key={i}
                 onChange={onChange}
                 daySpans={daySpans}
+                onAbsent={onAbsent}
               />
             ))
           ) : (
