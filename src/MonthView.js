@@ -674,7 +674,10 @@ function MonthView() {
       versionService.search({fields: ['name'], data}).then(res => {
         if(res && res.data) {
           setVersionList([...res.data]);
+        } else {
+          setVersionList([]);
         }
+        setVersion('');
       });
     }
   }, [establishment]);
