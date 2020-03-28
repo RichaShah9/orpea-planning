@@ -562,6 +562,17 @@ function TableView() {
     }
   }, [establishment]);
 
+  const onSaveVersion = React.useCallback(() => {
+    const data = {
+      action:
+        "com.axelor.apps.orpea.planning.web.EmploymentContractController:saveNewVersion",
+      data: {
+        planningVersionId: version,
+      }
+    };
+    employeeService.action(data).then(res => console.log('res', res));
+  }, [version]);
+
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -667,7 +678,19 @@ function TableView() {
             className={classes.fixCell}
             style={{ textAlign: "center" }}
           ></TableCell>
-          <TableCell className={classes.fixCell}></TableCell>
+          <TableCell className={classes.fixCell}>
+            <Button
+              style={{
+                padding: "0px 2px"
+              }}
+              size="small"
+              variant="outlined"
+              color="default"
+              onClick={onSaveVersion}
+            >
+              Sauvegarder nouvelle version
+            </Button>
+          </TableCell>
         </TableRow>
         <TableRow>
           <TableCell
