@@ -197,7 +197,8 @@ function TableEmployee({
             TableCell={TableCell} // Without Padding Cell
             key={i}
             color={employee[key]}
-            text={employee[getText(i)]}
+            text={employee[getText(i + 1)]}
+            popupText={employee[`d${i + 1}PopupText`]}
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
@@ -453,7 +454,8 @@ function MonthView() {
         "establishment",
         "planningVersion",
         ...getColorFields(days),
-        ...getColorFields(days, "Text")
+        ...getColorFields(days, "Text"),
+        ...getColorFields(days, "PopupText"),
       ];
       const employeeFields = [...profileFields, "profile"];
       const serviceList = [];

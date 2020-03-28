@@ -54,7 +54,9 @@ function PopupContent({
   action,
   actionData,
   onActionDataChange,
-  onActionSave
+  onActionSave,
+  popupText,
+  text,
 }) {
   const classes = useStyles();
   const [contractList, setContractList] = React.useState([]);
@@ -83,6 +85,18 @@ function PopupContent({
       <Typography gutterBottom>
         <b>Profile :</b> {profile.name}
       </Typography>
+      {
+        popupText &&
+        <Typography gutterBottom>
+          <b>Remplacé par :</b> {popupText}
+        </Typography>
+      }
+      {
+        text &&
+        <Typography gutterBottom>
+          <b>Info :</b> {text}
+        </Typography>
+      }
       {!disableCheckbox && (
         <>
           <FormControlLabel
@@ -187,6 +201,7 @@ function Popup({
   disablePopup,
   onAbsent,
   onActionSave,
+  popupText = "",
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -288,6 +303,8 @@ function Popup({
           actionData={actionData}
           onActionDataChange={onActionDataChange}
           onActionSave={handleActionSave}
+          popupText={popupText}
+          text={text}
         />
       </Popover>
     </>
