@@ -71,7 +71,7 @@ function PopupContent({
 
   React.useEffect(() => {
     const data = {
-      _domain: `self.profile.id=${profile.id} and service=null`,
+      _domain: `self.profile.id=${profile.id} and self.service=null`,
     };
     if(action === 'Recrutement') {
 
