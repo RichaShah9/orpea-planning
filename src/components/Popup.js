@@ -8,11 +8,17 @@ import {
   Checkbox,
   MenuItem,
   Select,
-  Button
+  Button,
+  TextField 
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-
+import moment from 'moment';
 import ColorPicker from "./ColorPicker";
+import AxelorService from "./../service/axelor.rest";
+
+const employeeContractService = new AxelorService({
+  model: "com.axelor.apps.hr.db.EmploymentContract"
+});
 
 const useStyles = makeStyles(theme => ({
   popup: {
@@ -42,9 +48,31 @@ function PopupContent({
   selectValue,
   onSelect = () => {},
   onValidate = () => {},
-  disableCheckbox
+  disableCheckbox,
+  enableBlue=false,
+  onActionChange,
+  action,
+  actionData,
+  onActionDataChange,
+  onActionSave
 }) {
   const classes = useStyles();
+  const [contractList, setContractList] = React.useState([]);
+
+  React.useEffect(() => {
+    const data = {
+      // _domain: `self.profile.id=${profile.id} and service=null`,
+    };
+    if(action === 'Recrutement') {
+
+      employeeContractService.search({fields: ['fullName'], data}).then(res => {
+        if(res && res.data) {
+          const {data = []} = res;
+          setContractList([...data]);
+        }
+      });
+    }
+  }, [profile, action])
   return (
     <div className={classes.popupContent}>
       {employee && employee.name && (
@@ -98,13 +126,58 @@ function PopupContent({
           )}
         </>
       )}
+      {enableBlue && (
+        <div style={{display: 'flex', flexDirection: 'column', marginBottom: 5}}>
+          <Select
+            value={action}
+            onChange={({ target: { value } }) => onActionChange(value)}
+          >
+            {["Remplacement", "Recrutement"].map(v => (
+              <MenuItem value={v} key={v}>
+                {v}
+              </MenuItem>
+            ))}
+          </Select>
+          {
+            action === 'Remplacement' &&
+            <>
+              <Typography>Remplaçant</Typography>
+              <Select
+                value={actionData.substituteContractId || ''}
+                onChange={({ target: { value } }) => onActionDataChange('substituteContractId', value)}
+              >
+                {
+                  contractList.map((contract, i) => (
+                    <MenuItem value={contract.id} key={i}>{contract.fullName}</MenuItem>
+                  ))
+                }
+              </Select>
+            </>
+          }
+          <Typography>Au</Typography>
+          <TextField 
+            type="date"   
+            value={actionData.to}     
+            onChange={(e) => onActionDataChange('to', e.target.value)}    
+          />
+          <Button
+            style={{ padding: "0px 2px", margin: 10 }}
+            size="small"
+            variant="outlined"
+            color="default"
+            onClick={onActionSave}
+          >
+            {action === 'Remplacement' ? 'Remplacer' : 'Demander recrutement'}
+          </Button>
+        </div>
+      )}
       <ColorPicker circleSpacing={12} color={color} onChange={onColorChange} />
     </div>
   );
 }
 
 function Popup({
-  employee,
+  employee = {},
   profile,
   color: colorProp,
   onColorChange: onColorChangeProp = () => {},
@@ -113,6 +186,7 @@ function Popup({
   style = {},
   disablePopup,
   onAbsent,
+  onActionSave,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -146,9 +220,26 @@ function Popup({
   
   const [checked, setChecked] = React.useState(false);
   const [selectValue, setSelectValue] = React.useState("Congé payé");
+  const [action, setAction] = React.useState("Recrutement");
+  const [actionData, setActionData] = React.useState({
+    to: moment().format('YYYY-MM-DD'),
+    originalContractId: employee.employmentContract ? employee.employmentContract.id : null,
+  });
   const onValidate = React.useCallback(() => {
     onAbsent(selectValue)
-  }, [onAbsent, selectValue])
+  }, [onAbsent, selectValue]);
+
+  const onActionDataChange = React.useCallback((key, value) => {
+    setActionData(data => {
+      return {
+        ...data,
+        [key]: value
+      }
+    })
+  }, []);
+  const handleActionSave = React.useCallback(() => {
+    onActionSave({...actionData, action});
+  }, [actionData, onActionSave, action]);
 
   let tooltipTitle = "";
   if (profile) tooltipTitle += `Profile: ${profile.name}; `;
@@ -191,6 +282,12 @@ function Popup({
           onSelect={setSelectValue}
           disableCheckbox={colorProp !== '#7fbc64'}
           onValidate={onValidate}
+          enableBlue={colorProp === '#7ba3ed'}
+          action={action}
+          onActionChange={setAction}
+          actionData={actionData}
+          onActionDataChange={onActionDataChange}
+          onActionSave={handleActionSave}
         />
       </Popover>
     </>

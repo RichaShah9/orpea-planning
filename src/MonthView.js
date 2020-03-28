@@ -146,7 +146,8 @@ function TableEmployee({
   onChange,
   daySpans,
   days,
-  onAbsent
+  onAbsent,
+  onActionSave
 }) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
@@ -200,7 +201,9 @@ function TableEmployee({
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
-            onAbsent={(value) => onAbsent(employee.id, i, value)}
+            onAbsent={(value) => onAbsent(employee.employeeId, i, value)}
+            dateNumber={i}
+            onActionSave={(actionData) => onActionSave(actionData, i)}
           />
         ))}
         {new Array(31 - days).fill(0).map((_, i) => (
@@ -212,7 +215,7 @@ function TableEmployee({
   );
 }
 
-function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent }) {
+function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent, onActionSave }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -304,13 +307,14 @@ function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent }) {
           days={days}
           onChange={params => onChange({ ...params, profileId: profile.id })}
           onAbsent={onAbsent}
+          onActionSave={onActionSave}
         />
       ))}
     </>
   );
 }
 
-function TableService({ service, onChange, daySpans, days, onAbsent }) {
+function TableService({ service, onChange, daySpans, days, onAbsent, onActionSave }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
 
@@ -361,6 +365,7 @@ function TableService({ service, onChange, daySpans, days, onAbsent }) {
           hidden={collapsed}
           days={days}
           onAbsent={onAbsent}
+          onActionSave={onActionSave}
         />
       ))}
     </>
@@ -442,6 +447,7 @@ function MonthView() {
       const profileFields = [
         "service",
         "employmentContract",
+        "employmentContract.employee",
         "monthPeriod",
         "profile",
         "establishment",
@@ -517,6 +523,7 @@ function MonthView() {
                     ? getProfile(employee.profile, employee.service)
                     : service.profiles[profileIndex];
                 const empObject = {
+                  employeeId: employee['employmentContract.employee'].id,
                   name:
                     employee.employmentContract &&
                     employee.employmentContract.fullName,
@@ -709,9 +716,7 @@ function MonthView() {
           .format("YYYY-MM-DD")
       }
     };
-    console.log(data, dateNumber);
     employeeMonthService.action(data).then(res => {
-      console.log(res);
       onRefresh();
     })
   }, [onRefresh, month])
@@ -724,8 +729,33 @@ function MonthView() {
         planningVersionId: version,
       }
     };
-    employeeMonthService.action(data).then(res => console.log('res', res));
-  }, [version]);
+    employeeMonthService.action(data).then(res => {
+      if(res && res.data && res.data[0].reload) {
+        onRefresh();
+      }
+    });
+  }, [version, onRefresh]);
+
+  const onActionSave = React.useCallback((actionData, day) => {
+    const {action, ...otherData} = actionData;
+    const method = action === 'Recrutement' ? 'hire' : 'createSubstitute';
+    const data = {
+      action:
+        `com.axelor.apps.orpea.planning.web.EmploymentContractController:${method}`,
+      data: {
+        ...otherData,
+        from: moment(month, MONTH_FORMAT)
+        .startOf('month')
+        .add(day, "days")
+        .format("YYYY-MM-DD"),
+      }
+    }
+    employeeMonthService.action(data).then(res => {
+      if(res && res.data && res.data[0].reload) {
+        onRefresh();
+      }
+    });
+  }, [month, onRefresh]);
 
   React.useEffect(() => {
     fetchEstVersion();
@@ -1057,6 +1087,7 @@ function MonthView() {
                 onChange={onChange}
                 daySpans={daySpans}
                 onAbsent={onAbsent}
+                onActionSave={onActionSave}
               />
             ))
           ) : (
@@ -1094,7 +1125,10 @@ function MonthView() {
     versionList,
     version,
     handleEstablishmentChange,
-    handleVersionChange
+    handleVersionChange,
+    onAbsent,
+    onSaveVersion,
+    onActionSave,
   ]);
 
   return (
