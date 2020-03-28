@@ -119,7 +119,7 @@ function getTextFields() {
   return getHourFields("Text");
 }
 
-function TableEmployee({ employee, profile, hidden, onChange }) {
+function TableEmployee({ employee, profile, hidden, onChange, onAbsent }) {
   const classes = useStyles();
   console.log(employee);
   const onEmployeeChange = React.useCallback(
@@ -164,6 +164,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
+            onAbsent={(value) => onAbsent(employee.id, i + 8, value)}
           />
         ))}
         <TableCell />
@@ -172,7 +173,7 @@ function TableEmployee({ employee, profile, hidden, onChange }) {
   );
 }
 
-function TableProfile({ profile, hidden, onChange }) {
+function TableProfile({ profile, hidden, onChange, onAbsent }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -237,6 +238,7 @@ function TableProfile({ profile, hidden, onChange }) {
             color={profile[key]}
             profile={profile}
             onColorChange={color => onProfileChange(key, color)}
+            disablePopup={true}
           />
         ))}
         <TableCell />
@@ -248,13 +250,14 @@ function TableProfile({ profile, hidden, onChange }) {
           key={i}
           hidden={collapsed || hidden}
           onChange={params => onChange({ ...params, profileId: profile.id })}
+          onAbsent={onAbsent}
         />
       ))}
     </>
   );
 }
 
-function TableService({ service, onChange }) {
+function TableService({ service, onChange, onAbsent }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
   const classes = useStyles();
@@ -296,6 +299,7 @@ function TableService({ service, onChange }) {
           profile={profile}
           key={i}
           hidden={collapsed}
+          onAbsent={onAbsent}
         />
       ))}
     </>
@@ -515,6 +519,25 @@ function TableView() {
     [onRefresh, establishment]
   );
 
+  const onAbsent = React.useCallback((employeeId, hour, leaveReasonSelect) => {
+    const data = {
+      action:
+        "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceDayPlanning",
+      data: {
+        employeeId,
+        leaveReasonSelect,
+        hour,
+        date: moment(date, "DD-MM-YYYY")
+          .format("YYYY-MM-DD")
+      }
+    };
+    console.log(data);
+    employeeService.action(data).then(res => {
+      console.log(res);
+      onRefresh();
+    })
+  }, [onRefresh, date])
+
   const handleEstablishmentChange = React.useCallback(e => {
     setEstablishment(e.target.value);
   }, []);
@@ -719,7 +742,7 @@ function TableView() {
       <TableBody>
         {!isLoading ? (
           data.map((serivce, i) => (
-            <TableService service={serivce} key={i} onChange={onChange} />
+            <TableService service={serivce} key={i} onChange={onChange} onAbsent={onAbsent} />
           ))
         ) : (
           <div
