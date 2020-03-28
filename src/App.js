@@ -119,6 +119,10 @@ function getTextFields() {
   return getHourFields("Text");
 }
 
+function getPopupTextFields() {
+  return getHourFields("PopupText");
+}
+
 function TableEmployee({ employee, profile, hidden, onChange, onAbsent, lock }) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
@@ -159,6 +163,7 @@ function TableEmployee({ employee, profile, hidden, onChange, onAbsent, lock }) 
             TableCell={TableCell}
             key={i}
             text={employee[`h${i + 8}Text`]}
+            popupText={employee[`h${i + 8}PopupText`]}
             color={employee[key]}
             profile={profile}
             employee={employee}
@@ -333,7 +338,8 @@ function TableView() {
         "establishment",
         "planningVersion",
         ...getColorFields(),
-        ...getTextFields()
+        ...getTextFields(),
+        ...getPopupTextFields(),
       ];
       const employeeFields = [...profileFields, "profile"];
       let _domain = null;

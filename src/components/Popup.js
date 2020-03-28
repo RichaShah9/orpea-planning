@@ -42,7 +42,9 @@ function PopupContent({
   selectValue,
   onSelect = () => {},
   onValidate = () => {},
-  disableCheckbox
+  disableCheckbox,
+  popupText,
+  text,
 }) {
   const classes = useStyles();
   return (
@@ -55,6 +57,18 @@ function PopupContent({
       <Typography gutterBottom>
         <b>Profile :</b> {profile.name}
       </Typography>
+      {
+        popupText &&
+        <Typography gutterBottom>
+          <b>Remplacé par :</b> {popupText}
+        </Typography>
+      }
+      {
+        text &&
+        <Typography gutterBottom>
+          <b>Info :</b> {text}
+        </Typography>
+      }
       {!disableCheckbox && (
         <>
           <FormControlLabel
@@ -113,6 +127,7 @@ function Popup({
   style = {},
   disablePopup,
   onAbsent,
+  popupText= ""
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -190,6 +205,8 @@ function Popup({
           onSelect={setSelectValue}
           disableCheckbox={colorProp !== '#7fbc64'}
           onValidate={onValidate}
+          popupText={popupText}
+          text={text}
         />
       </Popover>
     </>
