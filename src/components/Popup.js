@@ -13,7 +13,6 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import moment from 'moment';
-import ColorPicker from "./ColorPicker";
 import AxelorService from "./../service/axelor.rest";
 
 const employeeContractService = new AxelorService({
@@ -185,7 +184,6 @@ function PopupContent({
           </Button>
         </div>
       )}
-      <ColorPicker circleSpacing={12} color={color} onChange={onColorChange} />
     </div>
   );
 }
