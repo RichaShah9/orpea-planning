@@ -716,6 +716,17 @@ function MonthView() {
     })
   }, [onRefresh, month])
 
+  const onSaveVersion = React.useCallback(() => {
+    const data = {
+      action:
+        "com.axelor.apps.orpea.planning.web.EmploymentContractController:saveNewVersion",
+      data: {
+        planningVersionId: version,
+      }
+    };
+    employeeMonthService.action(data).then(res => console.log('res', res));
+  }, [version]);
+
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -768,7 +779,19 @@ function MonthView() {
               colSpan={10}
               width="400px"
               className={classes.fixCell}
-            ></TableCell>
+            >
+              <Button
+                style={{
+                  padding: "0px 2px"
+                }}
+                size="small"
+                variant="outlined"
+                color="default"
+                onClick={onSaveVersion}
+              >
+                Sauvegarder nouvelle version
+              </Button>
+            </TableCell>
             <TableCell
               colSpan={2}
               align="center"
