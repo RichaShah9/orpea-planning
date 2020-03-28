@@ -12,8 +12,6 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
-import ColorPicker from "./ColorPicker";
-
 const useStyles = makeStyles(theme => ({
   popup: {
     height: 20,
@@ -112,7 +110,6 @@ function PopupContent({
           )}
         </>
       )}
-      <ColorPicker circleSpacing={12} color={color} onChange={onColorChange} />
     </div>
   );
 }
