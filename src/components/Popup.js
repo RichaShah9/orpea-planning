@@ -76,49 +76,6 @@ function PopupContent({
           <b>Info :</b> {text}
         </Typography>
       }
-      {!disableCheckbox && (
-        <>
-          <Select
-            value={checked}
-            style={{width: '100%'}}
-            onChange={({ target: { value } }) => onChecked(value)}
-          >
-            <MenuItem value={false}/>
-            <MenuItem value={true}>Ajouter une absence</MenuItem>
-          </Select>
-          {checked && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                padding: "10px 0"
-              }}
-            >
-              <Typography className={classes.fieldTitle}>Motif</Typography>
-              <Select
-                value={selectValue}
-                onChange={({ target: { value } }) => onSelect(value)}
-              >
-                {["Congé payé", "Congé sans solde", "Arrêt Maladie"].map(v => (
-                  <MenuItem value={v} key={v}>
-                    {v}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                style={{ padding: "0px 2px", width: "60%", marginTop: 10 }}
-                className={classes.leaveButton}
-                size="small"
-                variant="outlined"
-                color="default"
-                onClick={onValidate}
-              >
-                Valider
-              </Button>
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }
@@ -209,7 +166,6 @@ function Popup({
           onChecked={setChecked}
           selectValue={selectValue}
           onSelect={setSelectValue}
-          disableCheckbox={colorProp !== '#7fbc64'}
           onValidate={onValidate}
           popupText={popupText}
           text={text}
