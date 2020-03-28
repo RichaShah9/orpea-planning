@@ -119,9 +119,8 @@ function getTextFields() {
   return getHourFields("Text");
 }
 
-function TableEmployee({ employee, profile, hidden, onChange, onAbsent }) {
+function TableEmployee({ employee, profile, hidden, onChange, onAbsent, lock }) {
   const classes = useStyles();
-  console.log(employee);
   const onEmployeeChange = React.useCallback(
     (key, value) => {
       employeeService
@@ -165,6 +164,7 @@ function TableEmployee({ employee, profile, hidden, onChange, onAbsent }) {
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
             onAbsent={(value) => onAbsent(employee.id, i + 8, value)}
+            disablePopup={lock}
           />
         ))}
         <TableCell />
@@ -173,7 +173,7 @@ function TableEmployee({ employee, profile, hidden, onChange, onAbsent }) {
   );
 }
 
-function TableProfile({ profile, hidden, onChange, onAbsent }) {
+function TableProfile({ profile, hidden, onChange, onAbsent, lock }) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -251,13 +251,14 @@ function TableProfile({ profile, hidden, onChange, onAbsent }) {
           hidden={collapsed || hidden}
           onChange={params => onChange({ ...params, profileId: profile.id })}
           onAbsent={onAbsent}
+          lock={lock}
         />
       ))}
     </>
   );
 }
 
-function TableService({ service, onChange, onAbsent }) {
+function TableService({ service, onChange, onAbsent, lock }) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
   const classes = useStyles();
@@ -300,6 +301,7 @@ function TableService({ service, onChange, onAbsent }) {
           key={i}
           hidden={collapsed}
           onAbsent={onAbsent}
+          lock={lock}
         />
       ))}
     </>
@@ -312,6 +314,7 @@ function TableView() {
   const [versionList, setVersionList] = React.useState([]);
   const [establishment, setEstablishment] = React.useState("");
   const [version, setVersion] = React.useState("");
+  const [lock, setLock] = React.useState(false);
   const classes = useStyles();
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
@@ -573,6 +576,10 @@ function TableView() {
     employeeService.action(data).then(res => console.log('res', res));
   }, [version]);
 
+  const handleLock = React.useCallback(() => {
+    setLock(l => !l);
+  }, [])
+
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -625,6 +632,7 @@ function TableView() {
               color="default"
               startIcon={<AddIcon />}
               onClick={toggleDialog}
+              disabled={lock}
             >
               Ajouter employé
             </Button>
@@ -645,6 +653,7 @@ function TableView() {
                   e.preventDefault();
                 }
               }}
+              disabled={lock}
             />
           </TableCell>
           <TableCell
@@ -677,7 +686,19 @@ function TableView() {
             width="160px"
             className={classes.fixCell}
             style={{ textAlign: "center" }}
-          ></TableCell>
+          >
+            <Button
+              style={{
+                padding: "0px 2px"
+              }}
+              size="small"
+              variant="outlined"
+              color="default"
+              onClick={handleLock}
+            >
+              {!lock ? 'Verouiller planning' : 'Dévrouiller'}
+            </Button>
+          </TableCell>
           <TableCell className={classes.fixCell}>
             <Button
               style={{
@@ -687,6 +708,7 @@ function TableView() {
               variant="outlined"
               color="default"
               onClick={onSaveVersion}
+              disabled={lock}
             >
               Sauvegarder nouvelle version
             </Button>
@@ -765,7 +787,7 @@ function TableView() {
       <TableBody>
         {!isLoading ? (
           data.map((serivce, i) => (
-            <TableService service={serivce} key={i} onChange={onChange} onAbsent={onAbsent} />
+            <TableService service={serivce} key={i} onChange={onChange} onAbsent={onAbsent} lock={lock} />
           ))
         ) : (
           <div
