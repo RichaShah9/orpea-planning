@@ -88,6 +88,9 @@ class service {
 		return this.interceptor(url, 'delete', data);
 	}
 
+	get(url) {
+		return this.interceptor(url, 'get');
+	}
 
 	login(username, password) {
 		const data = {username, password};
@@ -104,7 +107,6 @@ class service {
 			localStorage.removeItem('credential');
 		});
 	}
-
 
 }
 

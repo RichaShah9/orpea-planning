@@ -51,6 +51,11 @@ class AxelorService {
 		const url = 'ws/action'
 		return services.post(url, data);
 	}
+
+	info() {
+		const url = 'ws/app/info';
+		return services.get(url);
+	}
 }
 
 export default AxelorService;
