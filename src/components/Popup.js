@@ -27,6 +27,15 @@ const useStyles = makeStyles(theme => ({
     padding: 20,
     backgroundColor: "#EEEEEE",
     borderRadius: 4
+  },
+  leaveButton: {
+    alignSelf: 'center',
+  },
+  fieldTitle: {
+    paddingTop: 15,
+    fontWeight: 'bold',
+    lineHeight: 0.8,
+
   }
 }));
 
@@ -49,11 +58,11 @@ function PopupContent({
     <div className={classes.popupContent}>
       {employee && employee.name && (
         <Typography gutterBottom>
-          <b>Employee :</b> {employee.name}
+          <b>Employé :</b> {employee.name}
         </Typography>
       )}
       <Typography gutterBottom>
-        <b>Profile :</b> {profile.name}
+        <b>Qualification :</b> {profile.name}
       </Typography>
       {
         popupText &&
@@ -69,16 +78,14 @@ function PopupContent({
       }
       {!disableCheckbox && (
         <>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checked}
-                onChange={({ target: { checked } }) => onChecked(checked)}
-                name="checkedA"
-              />
-            }
-            label="Absent"
-          />
+          <Select
+            value={checked}
+            style={{width: '100%'}}
+            onChange={({ target: { value } }) => onChecked(value)}
+          >
+            <MenuItem value={false}/>
+            <MenuItem value={true}>Ajouter une absence</MenuItem>
+          </Select>
           {checked && (
             <div
               style={{
@@ -87,6 +94,7 @@ function PopupContent({
                 padding: "10px 0"
               }}
             >
+              <Typography className={classes.fieldTitle}>Motif</Typography>
               <Select
                 value={selectValue}
                 onChange={({ target: { value } }) => onSelect(value)}
@@ -99,6 +107,7 @@ function PopupContent({
               </Select>
               <Button
                 style={{ padding: "0px 2px", width: "60%", marginTop: 10 }}
+                className={classes.leaveButton}
                 size="small"
                 variant="outlined"
                 color="default"
