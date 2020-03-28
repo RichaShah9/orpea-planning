@@ -46,6 +46,9 @@ const establishmentService = new AxelorService({
 const versionService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.PlanningVersion"
 });
+const groupService = new AxelorService({
+  model: "com.axelor.auth.db.Group"
+});
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
   <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "1px 0px" }}>
@@ -319,7 +322,8 @@ function TableView() {
   const [versionList, setVersionList] = React.useState([]);
   const [establishment, setEstablishment] = React.useState("");
   const [version, setVersion] = React.useState("");
-  const [lock, setLock] = React.useState(false);
+  const [lock, setLock] = React.useState(true);
+  const [isDe, setIsDe] = React.useState(false);
   const classes = useStyles();
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
@@ -600,6 +604,16 @@ function TableView() {
         setEstablishmentList([...res.data]);
       }
     });
+    employeeService.info().then(res => {
+      const data = {
+        _domain: `self.code='${res['user.group']}'`
+      };
+      groupService.search({fields: ['name', 'code', 'isDe'], data}).then(res => {
+        if(res && res.data[0]) {
+          setIsDe(res.data[0].isDe);
+        }
+      })
+    });
   }, []);
 
   return (
@@ -693,17 +707,20 @@ function TableView() {
             className={classes.fixCell}
             style={{ textAlign: "center" }}
           >
-            <Button
-              style={{
-                padding: "0px 2px"
-              }}
-              size="small"
-              variant="outlined"
-              color="default"
-              onClick={handleLock}
-            >
-              {!lock ? 'Verouiller planning' : 'Dévrouiller'}
-            </Button>
+            {
+              isDe &&
+              <Button
+                style={{
+                  padding: "0px 2px"
+                }}
+                size="small"
+                variant="outlined"
+                color="default"
+                onClick={handleLock}
+              >
+                {!lock ? 'Verouiller planning' : 'Dévrouiller'}
+              </Button>
+            }
           </TableCell>
           <TableCell className={classes.fixCell}>
             <Button
