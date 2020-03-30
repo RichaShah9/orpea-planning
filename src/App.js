@@ -775,6 +775,7 @@ function TableView() {
                   input: classes.input
                 }
               }}
+              onChange={(e) => setDailyRate(e.target.value)}
               onKeyPress={e => {
                 if (e.key === "Enter") {
                   updatePlanning(e.target.value, date);
