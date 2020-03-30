@@ -768,7 +768,7 @@ function TableView() {
               Ajouter employé
             </Button>
           </TableCell>
-          <TableCell colSpan={5} width="200px" className={classes.fixCell}>
+          <TableCell colSpan={5} width="250px" className={classes.fixCell}>
             <Typography className={classes.occupationTitle}>
               Taux d'occupation :
             </Typography>
@@ -795,7 +795,7 @@ function TableView() {
           </TableCell>
           <TableCell
             className={cs(classes.tableCell, classes.fixCell)}
-            width="40px"
+            width="50px"
           >
             <IconButton
               size="small"
@@ -805,14 +805,14 @@ function TableView() {
               <PreviousIcon fontSize="small" />
             </IconButton>
           </TableCell>
-          <TableCell colSpan={5} width="200px" className={classes.fixCell}>
+          <TableCell colSpan={5} width="250px" className={classes.fixCell}>
             <Typography align="center">
               <b>{date}</b>
             </Typography>
           </TableCell>
           <TableCell
             className={cs(classes.tableCell, classes.fixCell)}
-            width="40px"
+            width="50px"
           >
             <IconButton size="small" style={{ padding: 0 }} onClick={onNext}>
               <NextIcon fontSize="small" />
@@ -820,7 +820,7 @@ function TableView() {
           </TableCell>
           <TableCell
             colSpan={3}
-            width="120px"
+            width="150px"
             className={classes.fixCell}
             style={{ textAlign: "center" }}
           >
