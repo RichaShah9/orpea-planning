@@ -821,20 +821,17 @@ function MonthView() {
     [occupationRates]
   );
 
-  const setDayRate = React.useCallback(
-    (value, day) => {
-      setOccupationRates(rates => {
-        const index = rates.findIndex(o => o.dayDate === day);
-        if(index !== -1) {
-          rates[index].dailyRate = value;
-        } else {
-          rates.push({dayDate: day, dailyRate: value});
-        }
-        return [...rates];
-      });
-    },
-    []
-  );
+  const setDayRate = React.useCallback((value, day) => {
+    setOccupationRates(rates => {
+      const index = rates.findIndex(o => o.dayDate === day);
+      if (index !== -1) {
+        rates[index].dailyRate = value;
+      } else {
+        rates.push({ dayDate: day, dailyRate: value });
+      }
+      return [...rates];
+    });
+  }, []);
 
   React.useEffect(() => {
     fetchEstVersion();
@@ -866,10 +863,12 @@ function MonthView() {
 
   React.useEffect(() => {
     const days = getDaysInMonth(month);
-    const list = Array(days).fill(0).map((_, i) => getDateFromDay(i));
+    const list = Array(days)
+      .fill(0)
+      .map((_, i) => getDateFromDay(i));
     console.log(list);
     setDayList([...list]);
-  }, [month, getDaysInMonth, getDateFromDay])
+  }, [month, getDaysInMonth, getDateFromDay]);
 
   React.useEffect(() => {
     establishmentService.search({ fields: ["name"] }).then(res => {
@@ -911,19 +910,11 @@ function MonthView() {
                 Ajouter employé
               </Button>
             </TableCell>
-            <TableCell colSpan={10} width="400px" className={classes.fixCell}>
-              <Button
-                style={{
-                  padding: "0px 2px"
-                }}
-                size="small"
-                variant="outlined"
-                color="default"
-                onClick={onSaveVersion}
-              >
-                Sauvegarder nouvelle version
-              </Button>
-            </TableCell>
+            <TableCell
+              colSpan={10}
+              width="400px"
+              className={classes.fixCell}
+            ></TableCell>
             <TableCell
               colSpan={2}
               align="center"
@@ -1056,10 +1047,23 @@ function MonthView() {
           {/* Days Initials */}
           <TableRow>
             <TableCell
+              align="center"
               colSpan={2}
               className={classes.topCell}
               style={{ top: 75 }}
-            ></TableCell>
+            >
+              <Button
+                style={{
+                  padding: "0px 2px"
+                }}
+                size="small"
+                variant="outlined"
+                color="default"
+                onClick={onSaveVersion}
+              >
+                Sauvegarder nouvelle version
+              </Button>
+            </TableCell>
             {initials.map((c, i) => (
               <TableCell
                 className={classes.fixCell}
