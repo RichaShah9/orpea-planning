@@ -52,6 +52,8 @@ function PopupContent({
   disableCheckbox,
   popupText,
   text,
+  employeeNbRequired,
+  employeeWorkingNb,
 }) {
   const classes = useStyles();
   return (
@@ -76,6 +78,12 @@ function PopupContent({
           <b>Info :</b> {text}
         </Typography>
       }
+      <Typography gutterBottom>
+        <b>Effectif alloué :</b> {employeeWorkingNb}
+      </Typography>
+      <Typography gutterBottom>
+        <b>Effectif requis :</b> {employeeNbRequired}
+      </Typography>
     </div>
   );
 }
@@ -90,7 +98,9 @@ function Popup({
   style = {},
   disablePopup,
   onAbsent,
-  popupText= ""
+  popupText= "",
+  employeeNbRequired,
+  employeeWorkingNb,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -169,6 +179,8 @@ function Popup({
           onValidate={onValidate}
           popupText={popupText}
           text={text}
+          employeeWorkingNb={employeeWorkingNb}
+          employeeNbRequired={employeeNbRequired}
         />
       </Popover>
     </>
