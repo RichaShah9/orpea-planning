@@ -181,7 +181,7 @@ function TableEmployee({
           <Typography
             style={{ paddingLeft: 8, marginLeft: 55 }}
             noWrap
-            title={employee.name}
+            title={(employee["employmentContract.employee"] || {}).name}
           >
             {(employee["employmentContract.employee"] || {}).name}
           </Typography>
@@ -781,7 +781,7 @@ function TableView() {
                   input: classes.input
                 }
               }}
-              onChange={(e) => setDailyRate(e.target.value)}
+              onChange={e => setDailyRate(e.target.value)}
               onKeyPress={e => {
                 if (e.key === "Enter") {
                   updatePlanning(e.target.value, date);
