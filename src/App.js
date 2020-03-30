@@ -382,11 +382,11 @@ function TableView() {
               setLoading(false);
               return;
             }
-            const { data = [] } = res;
+            const { data: profileData = [] } = res;
             const { data: employeeData = [] } = employeeResponse;
             const getProfile = (profile, service) => {
               const _profile =
-                data.find(
+                profileData.find(
                   p =>
                     p.profile &&
                     p.profile.id === profile.id &&
@@ -404,38 +404,49 @@ function TableView() {
               return profileObject;
             };
 
-            employeeData.forEach(employee => {
-              const serviceIndex = getServiceIndex(employee.service.id);
+            const getEmployeeList = (profileId, serviceId) => {
+              return employeeData.map(emp => {
+                if(emp.profile.id === profileId && emp.service.id === serviceId) {
+                  const empObject = {
+                    name:
+                      emp.employmentContract &&
+                      emp.employmentContract.fullName,
+                    ...emp
+                  };
+                  delete empObject.employee;
+                  delete empObject.profile;
+                  delete empObject.service;
+                  return {...empObject}
+                }
+                return undefined;
+              }).filter(e => e);
+            }
+
+            profileData.forEach(_profile => {
+              console.log(_profile);
+              const serviceIndex = getServiceIndex(_profile.service.id);
               const service =
                 serviceIndex === -1
                   ? {
-                      name: employee.service.name,
-                      id: employee.service.id,
+                      name: _profile.service.name,
+                      id: _profile.service.id,
                       profiles: []
                     }
                   : serviceList[serviceIndex];
 
               const profileIndex = getProfileIndex(
                 service.profiles,
-                employee.profile.id,
-                employee.service.id
+                _profile.profile.id,
+                _profile.service.id
               );
               const profile =
                 profileIndex === -1
-                  ? getProfile(employee.profile, employee.service)
+                  ? getProfile(_profile.profile, _profile.service)
                   : service.profiles[profileIndex];
-              const empObject = {
-                name:
-                  employee.employmentContract &&
-                  employee.employmentContract.fullName,
-                ...employee
-              };
-              delete empObject.employee;
-              delete empObject.profile;
-              delete empObject.service;
-              profile.employees.push({
-                ...empObject
-              });
+              const employeeList = getEmployeeList(profile.profileId, profile.serviceId); 
+              profile.employees.push(
+                ...employeeList
+              );
               if (profileIndex !== -1) {
                 service.profiles[profileIndex] = { ...profile };
               } else {
@@ -544,9 +555,7 @@ function TableView() {
           .format("YYYY-MM-DD")
       }
     };
-    console.log(data);
     employeeService.action(data).then(res => {
-      console.log(res);
       onRefresh();
     })
   }, [onRefresh, date])
@@ -583,8 +592,12 @@ function TableView() {
         planningVersionId: version,
       }
     };
-    employeeService.action(data).then(res => console.log('res', res));
-  }, [version]);
+    employeeService.action(data).then(res => {
+      if (res && res.data && res.data[0].reload) {
+        onRefresh();
+      }
+    });
+  }, [version, onRefresh]);
 
   const handleLock = React.useCallback(() => {
     setLock(l => !l);
