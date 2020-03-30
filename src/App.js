@@ -352,7 +352,7 @@ function TableView() {
   const [lock, setLock] = React.useState(true);
   const [isDe, setIsDe] = React.useState(false);
   const [initialFetch, setInitialFetch] = React.useState(false);
-  const [dailyRate, setDailyRate] = React.useState();
+  const [dailyRate, setDailyRate] = React.useState('');
   const classes = useStyles();
 
   const [date, setDate] = React.useState(
@@ -664,6 +664,8 @@ function TableView() {
         .then(res => {
           if (res && res.data && res.data[0]) {
             setDailyRate(res.data[0].dailyRate || "");
+          } else {
+            setDailyRate("");
           }
         });
     }

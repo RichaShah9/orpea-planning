@@ -29,13 +29,12 @@ const useStyles = makeStyles(theme => ({
     borderRadius: 4
   },
   leaveButton: {
-    alignSelf: 'center',
+    alignSelf: "center"
   },
   fieldTitle: {
     paddingTop: 15,
-    fontWeight: 'bold',
-    lineHeight: 0.8,
-
+    fontWeight: "bold",
+    lineHeight: 0.8
   }
 }));
 
@@ -53,7 +52,7 @@ function PopupContent({
   popupText,
   text,
   employeeNbRequired,
-  employeeWorkingNb,
+  employeeWorkingNb
 }) {
   const classes = useStyles();
   return (
@@ -66,24 +65,26 @@ function PopupContent({
       <Typography gutterBottom>
         <b>Qualification :</b> {profile.name}
       </Typography>
-      {
-        popupText &&
+      {popupText && (
         <Typography gutterBottom>
           <b>Remplacé par :</b> {popupText}
         </Typography>
-      }
-      {
-        text &&
+      )}
+      {text && (
         <Typography gutterBottom>
           <b>Info :</b> {text}
         </Typography>
-      }
-      <Typography gutterBottom>
-        <b>Effectif alloué :</b> {employeeWorkingNb}
-      </Typography>
-      <Typography gutterBottom>
-        <b>Effectif requis :</b> {employeeNbRequired}
-      </Typography>
+      )}
+      {[undefined, null].includes(employeeWorkingNb) && (
+        <Typography gutterBottom>
+          <b>Effectif alloué :</b> {employeeWorkingNb}
+        </Typography>
+      )}
+      {[undefined, null].includes(employeeNbRequired) && (
+        <Typography gutterBottom>
+          <b>Effectif requis :</b> {employeeNbRequired}
+        </Typography>
+      )}
     </div>
   );
 }
@@ -98,9 +99,9 @@ function Popup({
   style = {},
   disablePopup,
   onAbsent,
-  popupText= "",
+  popupText = "",
   employeeNbRequired,
-  employeeWorkingNb,
+  employeeWorkingNb
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -134,8 +135,8 @@ function Popup({
   const [checked, setChecked] = React.useState(false);
   const [selectValue, setSelectValue] = React.useState("Congé payé");
   const onValidate = React.useCallback(() => {
-    onAbsent(selectValue)
-  }, [onAbsent, selectValue])
+    onAbsent(selectValue);
+  }, [onAbsent, selectValue]);
 
   let tooltipTitle = "";
   if (profile) tooltipTitle += `Profile: ${profile.name}; `;
