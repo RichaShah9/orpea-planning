@@ -29,7 +29,7 @@ function LineForm({ handleClose, open, fromDate, date }) {
 
   React.useEffect(() => {
     const data = {
-      // _domain: 'self.service = null',
+      _domain: 'self.service = null',
     };
     employmentContractService
       .search({ fields: ["fullName", "companyDepartment"], data })
