@@ -443,7 +443,6 @@ function TableView() {
             };
 
             profileData.forEach(_profile => {
-              console.log(_profile);
               const serviceIndex = getServiceIndex(_profile.service.id);
               const service =
                 serviceIndex === -1
