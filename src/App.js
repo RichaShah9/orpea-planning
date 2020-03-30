@@ -173,6 +173,7 @@ function TableEmployee({
     },
     [employee, onChange]
   );
+
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
@@ -182,7 +183,7 @@ function TableEmployee({
             noWrap
             title={employee.name}
           >
-            {employee.name}
+            {(employee["employmentContract.employee"] || {}).name}
           </Typography>
         </TableCell>
         {getColorFields().map((key, i) => (
@@ -366,6 +367,7 @@ function TableView() {
     const profileFields = [
       "service",
       "employmentContract",
+      "employmentContract.employee",
       "dayDate",
       "profile",
       "establishment",
