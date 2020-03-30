@@ -49,6 +49,9 @@ const versionService = new AxelorService({
 const groupService = new AxelorService({
   model: "com.axelor.auth.db.Group"
 });
+const occupationService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.OccupationRate"
+});
 
 const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
   <MuiTableCell ref={ref} {...rest} style={{ ...style, padding: "1px 0px" }}>
@@ -99,7 +102,8 @@ const useStyles = makeStyles(() => ({
     padding: 0
   },
   input: {
-    padding: "2px 1px"
+    padding: "2px 1px",
+    textAlign: 'center',
   },
   topCell: {
     position: "sticky",
@@ -107,6 +111,15 @@ const useStyles = makeStyles(() => ({
     zIndex: 10,
     background: "#f9f9fc",
     border: "1px solid #eeeeee"
+  },
+  occupationTitle: {
+    display: 'inline',
+    marginRight: 8,
+    fontWeight: 'bold',
+    marginLeft: 2,
+  },
+  dailyRateField: {
+    width: 45,
   }
 }));
 
@@ -338,6 +351,7 @@ function TableView() {
   const [lock, setLock] = React.useState(true);
   const [isDe, setIsDe] = React.useState(false);
   const [initialFetch, setInitialFetch] = React.useState(false);
+  const [dailyRate, setDailyRate] = React.useState();
   const classes = useStyles();
 
   const [date, setDate] = React.useState(
@@ -638,6 +652,20 @@ function TableView() {
   }, [fetchEstVersion, initialFetch]);
 
   React.useEffect(() => {
+    if(establishment) {
+      const _date = moment(date, "DD-MM-YYYY").format("YYYY-MM-DD");
+      const data = {
+        _domain: `self.establishment.id = ${establishment} and self.dayDate = '${_date}'`,
+      }
+      occupationService.search({fields: ['dayDate', 'dailyRate'], data, sortBy: ['dayDate']}).then(res => {
+        if(res && res.data && res.data[0]) {
+          setDailyRate(res.data[0].dailyRate || '');
+        }
+      });
+    }
+  }, [date, establishment])
+
+  React.useEffect(() => {
     setLoading(true);
     establishmentService
       .search({ fields: ["name"] })
@@ -677,20 +705,21 @@ function TableView() {
         setInitialFetch(true);
         fetchData(undefined, undefined, date);
       });
-
-    employeeService.info().then(res => {
-      const data = {
-        _domain: `self.code='${res["user.group"]}'`
-      };
-      groupService
-        .search({ fields: ["name", "code", "isDe"], data })
-        .then(res => {
-          if (res && res.data[0]) {
-            setIsDe(res.data[0].isDe);
-          }
-        });
-    });
-  }, [fetchData, date]);
+    if(!initialFetch) {
+      employeeService.info().then(res => {
+        const data = {
+          _domain: `self.code='${res["user.group"]}'`
+        };
+        groupService
+          .search({ fields: ["name", "code", "isDe"], data })
+          .then(res => {
+            if (res && res.data[0]) {
+              setIsDe(res.data[0].isDe);
+            }
+          });
+      });
+    }
+  }, [fetchData, date, initialFetch]);
 
   return (
     <Table
@@ -733,13 +762,16 @@ function TableView() {
               Ajouter employé
             </Button>
           </TableCell>
-          <TableCell colSpan={4} width="160px" className={classes.fixCell}>
+          <TableCell colSpan={5} width="200px" className={classes.fixCell}>
+            <Typography className={classes.occupationTitle}>Taux d'occupation :</Typography>
             <TextField
               className={classes.inputCell}
               variant="outlined"
               type="number"
+              value={dailyRate}
               InputProps={{
                 classes: {
+                  root: classes.dailyRateField,
                   input: classes.input
                 }
               }}
@@ -778,8 +810,8 @@ function TableView() {
             </IconButton>
           </TableCell>
           <TableCell
-            colSpan={4}
-            width="160px"
+            colSpan={3}
+            width="120px"
             className={classes.fixCell}
             style={{ textAlign: "center" }}
           >
