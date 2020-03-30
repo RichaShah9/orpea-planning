@@ -82,7 +82,7 @@ const useStyles = makeStyles(theme => ({
   },
   input: {
     padding: "2px 1px",
-    textAlign: 'center',
+    textAlign: "center"
   },
   fixCell: {
     position: "sticky",
@@ -101,8 +101,8 @@ const useStyles = makeStyles(theme => ({
     width: 300
   },
   occupationTitle: {
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center"
   }
 }));
 
@@ -211,9 +211,9 @@ function TableEmployee({
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
-            onAbsent={(value) => onAbsent(employee.employeeId, i, value)}
+            onAbsent={value => onAbsent(employee.employeeId, i, value)}
             dateNumber={i}
-            onActionSave={(actionData) => onActionSave(actionData, i)}
+            onActionSave={actionData => onActionSave(actionData, i)}
             fromDate={getDateFromDay(i)}
           />
         ))}
@@ -226,7 +226,16 @@ function TableEmployee({
   );
 }
 
-function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent, onActionSave, getDateFromDay }) {
+function TableProfile({
+  profile,
+  hidden,
+  onChange,
+  daySpans,
+  days,
+  onAbsent,
+  onActionSave,
+  getDateFromDay
+}) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   const onClick = React.useCallback(() => {
@@ -326,7 +335,15 @@ function TableProfile({ profile, hidden, onChange, daySpans, days, onAbsent, onA
   );
 }
 
-function TableService({ service, onChange, daySpans, days, onAbsent, onActionSave, getDateFromDay }) {
+function TableService({
+  service,
+  onChange,
+  daySpans,
+  days,
+  onAbsent,
+  onActionSave,
+  getDateFromDay
+}) {
   const [collapsed, setCollapsed] = React.useState(false);
   const { profiles = [] } = service;
 
@@ -468,7 +485,7 @@ function MonthView() {
         "planningVersion",
         ...getColorFields(days),
         ...getColorFields(days, "Text"),
-        ...getColorFields(days, "PopupText"),
+        ...getColorFields(days, "PopupText")
       ];
       const employeeFields = [...profileFields, "profile"];
       const serviceList = [];
@@ -518,9 +535,12 @@ function MonthView() {
               };
 
               const getEmployeeList = (profileId, serviceId) => {
-                const list = []
+                const list = [];
                 employeeData.forEach(emp => {
-                  if(emp.profile.id === profileId && emp.service.id === serviceId) {
+                  if (
+                    emp.profile.id === profileId &&
+                    emp.service.id === serviceId
+                  ) {
                     const empObject = {
                       name:
                         emp.employmentContract &&
@@ -530,11 +550,11 @@ function MonthView() {
                     delete empObject.employee;
                     delete empObject.profile;
                     delete empObject.service;
-                    list.push({...empObject});
+                    list.push({ ...empObject });
                   }
                 });
                 return list;
-              }
+              };
 
               profileData.forEach(_profile => {
                 const serviceIndex = getServiceIndex(_profile.service.id);
@@ -557,10 +577,11 @@ function MonthView() {
                     ? getProfile(_profile.profile, _profile.service)
                     : service.profiles[profileIndex];
                 if (profileIndex === -1) {
-                  const employeeList = getEmployeeList(profile.profileId, profile.serviceId); 
-                  profile.employees.push(
-                    ...employeeList
+                  const employeeList = getEmployeeList(
+                    profile.profileId,
+                    profile.serviceId
                   );
+                  profile.employees.push(...employeeList);
                   service.profiles.push({ ...profile });
                 }
                 if (serviceIndex !== -1) {
@@ -713,79 +734,92 @@ function MonthView() {
   const fetchEstVersion = React.useCallback(() => {
     if (establishment) {
       const data = {
-        _domain: `self.establishment.id = ${establishment}`,
+        _domain: `self.establishment.id = ${establishment}`
       };
-      const sortBy = ["-versionNumber"]
-      versionService.search({ fields: ["name", "versionNumber"], data, sortBy }).then(res => {
-        if (res && res.data) {  
-          setVersionList([...res.data]);
-          setVersion(res.data[0].id);
-        } else {
-          setVersionList([]);
-          setVersion('');
-        }
-      });
+      const sortBy = ["-versionNumber"];
+      versionService
+        .search({ fields: ["name", "versionNumber"], data, sortBy })
+        .then(res => {
+          if (res && res.data) {
+            setVersionList([...res.data]);
+            setVersion(res.data[0].id);
+          } else {
+            setVersionList([]);
+            setVersion("");
+          }
+        });
     }
   }, [establishment]);
 
-  const onAbsent = React.useCallback((employeeId, dateNumber, leaveInfo) => {
-    const data = {
-      action:
-        "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceMonthPlanning",
-      data: {
-        employeeId,
-        ...leaveInfo,
-      }
-    };
-    employeeMonthService.action(data).then(res => {
-      onRefresh();
-    })
-  }, [onRefresh])
+  const onAbsent = React.useCallback(
+    (employeeId, dateNumber, leaveInfo) => {
+      const data = {
+        action:
+          "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceMonthPlanning",
+        data: {
+          employeeId,
+          ...leaveInfo
+        }
+      };
+      employeeMonthService.action(data).then(res => {
+        onRefresh();
+      });
+    },
+    [onRefresh]
+  );
 
   const onSaveVersion = React.useCallback(() => {
     const data = {
       action:
         "com.axelor.apps.orpea.planning.web.EmploymentContractController:saveNewVersion",
       data: {
-        planningVersionId: version,
+        planningVersionId: version
       }
     };
     employeeMonthService.action(data).then(res => {
-      if(res && res.data && res.data[0].reload) {
+      if (res && res.data && res.data[0].reload) {
         onRefresh();
       }
     });
   }, [version, onRefresh]);
 
-  const onActionSave = React.useCallback((actionData, day) => {
-    const {action, ...otherData} = actionData;
-    const method = action === 'Recrutement' ? 'hire' : 'createSubstitute';
-    const data = {
-      action:
-        `com.axelor.apps.orpea.planning.web.EmploymentContractController:${method}`,
-      data: {
-        ...otherData,
-      }
-    }
-    employeeMonthService.action(data).then(res => {
-      if(res && res.data && res.data[0].reload) {
-        onRefresh();
-      }
-    });
-  }, [onRefresh]);
+  const onActionSave = React.useCallback(
+    (actionData, day) => {
+      const { action, ...otherData } = actionData;
+      const method = action === "Recrutement" ? "hire" : "createSubstitute";
+      const data = {
+        action: `com.axelor.apps.orpea.planning.web.EmploymentContractController:${method}`,
+        data: {
+          ...otherData
+        }
+      };
+      employeeMonthService.action(data).then(res => {
+        if (res && res.data && res.data[0].reload) {
+          onRefresh();
+        }
+      });
+    },
+    [onRefresh]
+  );
 
-  const getDateFromDay = React.useCallback((day) => {
-    return moment(month, MONTH_FORMAT)
-        .startOf('month')
+  const getDateFromDay = React.useCallback(
+    day => {
+      return moment(month, MONTH_FORMAT)
+        .startOf("month")
         .add(day, "days")
-        .format("YYYY-MM-DD")
-  }, [month]);
+        .format("YYYY-MM-DD");
+    },
+    [month]
+  );
 
-  const getDayRate = React.useCallback((day) => {
-    const date = getDateFromDay(day);
-    const rate = occupationRates.find(o => o.dayDate === date);
-    return rate ? rate.dailyRate : ''
-  }, [getDateFromDay, occupationRates]);
+  const getDayRate = React.useCallback(
+    day => {
+      const date = getDateFromDay(day);
+      const rate = occupationRates.find(o => o.dayDate === date);
+      return rate ? rate.dailyRate : "";
+    },
+    [getDateFromDay, occupationRates]
+  );
 
   React.useEffect(() => {
     fetchEstVersion();
@@ -796,20 +830,22 @@ function MonthView() {
   }, [fetchData]);
 
   React.useEffect(() => {
-    if(establishment) {
+    if (establishment) {
       const _month = moment(month, MONTH_FORMAT);
-      const from = _month.startOf('month').format("YYYY-MM-DD");
-      const to = _month.endOf('month').format("YYYY-MM-DD");
+      const from = _month.startOf("month").format("YYYY-MM-DD");
+      const to = _month.endOf("month").format("YYYY-MM-DD");
       const data = {
-        _domain: `self.establishment.id = ${establishment} and self.dayDate >= '${from}' and self.dayDate <= '${to}'`,
-      }
-      occupationService.search({fields: ['dayDate', 'dailyRate'], data, sortBy: ['dayDate']}).then(res => {
-        if(res && res.data) {
-          setOccupationRates([...res.data]);
-        }
-      });
+        _domain: `self.establishment.id = ${establishment} and self.dayDate >= '${from}' and self.dayDate <= '${to}'`
+      };
+      occupationService
+        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
+        .then(res => {
+          if (res && res.data) {
+            setOccupationRates([...res.data]);
+          }
+        });
     }
-  }, [month, establishment])
+  }, [month, establishment]);
 
   React.useEffect(() => {
     establishmentService.search({ fields: ["name"] }).then(res => {
@@ -851,11 +887,7 @@ function MonthView() {
                 Ajouter employé
               </Button>
             </TableCell>
-            <TableCell
-              colSpan={10}
-              width="400px"
-              className={classes.fixCell}
-            >
+            <TableCell colSpan={10} width="400px" className={classes.fixCell}>
               <Button
                 style={{
                   padding: "0px 2px"
@@ -1077,7 +1109,9 @@ function MonthView() {
               className={classes.topCell}
               style={{ top: 125 }}
             >
-              <Typography className={classes.occupationTitle}>Taux d'occupation</Typography>
+              <Typography className={classes.occupationTitle}>
+                Taux d'occupation
+              </Typography>
             </TableCell>
             {new Array(days).fill(0).map((_, i) => (
               <TableCell
@@ -1180,7 +1214,7 @@ function MonthView() {
     onSaveVersion,
     onActionSave,
     getDateFromDay,
-    getDayRate,
+    getDayRate
   ]);
 
   return (
