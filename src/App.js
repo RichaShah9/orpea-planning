@@ -352,7 +352,7 @@ function TableView() {
   const [lock, setLock] = React.useState(true);
   const [isDe, setIsDe] = React.useState(false);
   const [initialFetch, setInitialFetch] = React.useState(false);
-  const [dailyRate, setDailyRate] = React.useState('');
+  const [dailyRate, setDailyRate] = React.useState("");
   const classes = useStyles();
 
   const [date, setDate] = React.useState(
@@ -840,6 +840,8 @@ function TableView() {
           </TableCell>
           <TableCell className={classes.fixCell}></TableCell>
         </TableRow>
+
+        {/**Hour Row */}
         <TableRow>
           <TableCell
             align="center"
@@ -909,11 +911,14 @@ function TableView() {
             style={{ top: 25 }}
           ></TableCell>
         </TableRow>
+
+        {/** Version Button Row */}
         <TableRow>
           <TableCell
             align="center"
             colSpan={2}
-            style={{ background: "#f9f9fc" }}
+            className={classes.topCell}
+            style={{ top: 75 }}
           >
             <Button
               style={{
@@ -928,7 +933,11 @@ function TableView() {
               Sauvegarder nouvelle version
             </Button>
           </TableCell>
-          <TableCell colSpan={16} style={{ background: "#f9f9fc" }}></TableCell>
+          <TableCell
+            colSpan={16}
+            style={{ top: 75 }}
+            className={classes.fixCell}
+          ></TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
