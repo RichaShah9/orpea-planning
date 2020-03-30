@@ -81,7 +81,8 @@ const useStyles = makeStyles(theme => ({
     border: "1px solid #eeeeee"
   },
   input: {
-    padding: "2px 1px"
+    padding: "2px 1px",
+    textAlign: 'center',
   },
   fixCell: {
     position: "sticky",
