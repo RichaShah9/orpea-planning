@@ -920,7 +920,7 @@ function TableView() {
             align="center"
             colSpan={2}
             className={classes.topCell}
-            style={{ top: 80 }}
+            style={{ top: 75 }}
           >
             <Button
               style={{ padding: "0px 2px", marginTop: 5, marginBottom: 5 }}
@@ -936,7 +936,7 @@ function TableView() {
           </TableCell>
           <TableCell
             colSpan={16}
-            style={{ top: 80 }}
+            style={{ top: 75 }}
             className={classes.fixCell}
           ></TableCell>
         </TableRow>
