@@ -130,7 +130,14 @@ function getEmployeeNbFields() {
   return new Array(15).fill(0).map((_, i) => `employeeNbWorkingAt${i + 8}h`);
 }
 
-function TableEmployee({ employee, profile, hidden, onChange, onAbsent, lock }) {
+function TableEmployee({
+  employee,
+  profile,
+  hidden,
+  onChange,
+  onAbsent,
+  lock
+}) {
   const classes = useStyles();
   const onEmployeeChange = React.useCallback(
     (key, value) => {
@@ -175,7 +182,7 @@ function TableEmployee({ employee, profile, hidden, onChange, onAbsent, lock }) 
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
-            onAbsent={(value) => onAbsent(employee.id, i + 8, value)}
+            onAbsent={value => onAbsent(employee.id, i + 8, value)}
             disablePopup={lock}
           />
         ))}
@@ -351,7 +358,7 @@ function TableView() {
         ...getColorFields(),
         ...getTextFields(),
         ...getPopupTextFields(),
-        ...getEmployeeNbFields(),
+        ...getEmployeeNbFields()
       ];
       const employeeFields = [...profileFields, "profile"];
       let _domain = null;
@@ -413,22 +420,27 @@ function TableView() {
             };
 
             const getEmployeeList = (profileId, serviceId) => {
-              return employeeData.map(emp => {
-                if(emp.profile.id === profileId && emp.service.id === serviceId) {
-                  const empObject = {
-                    name:
-                      emp.employmentContract &&
-                      emp.employmentContract.fullName,
-                    ...emp
-                  };
-                  delete empObject.employee;
-                  delete empObject.profile;
-                  delete empObject.service;
-                  return {...empObject}
-                }
-                return undefined;
-              }).filter(e => e);
-            }
+              return employeeData
+                .map(emp => {
+                  if (
+                    emp.profile.id === profileId &&
+                    emp.service.id === serviceId
+                  ) {
+                    const empObject = {
+                      name:
+                        emp.employmentContract &&
+                        emp.employmentContract.fullName,
+                      ...emp
+                    };
+                    delete empObject.employee;
+                    delete empObject.profile;
+                    delete empObject.service;
+                    return { ...empObject };
+                  }
+                  return undefined;
+                })
+                .filter(e => e);
+            };
 
             profileData.forEach(_profile => {
               console.log(_profile);
@@ -451,10 +463,11 @@ function TableView() {
                 profileIndex === -1
                   ? getProfile(_profile.profile, _profile.service)
                   : service.profiles[profileIndex];
-              const employeeList = getEmployeeList(profile.profileId, profile.serviceId); 
-              profile.employees.push(
-                ...employeeList
+              const employeeList = getEmployeeList(
+                profile.profileId,
+                profile.serviceId
               );
+              profile.employees.push(...employeeList);
               if (profileIndex !== -1) {
                 service.profiles[profileIndex] = { ...profile };
               } else {
@@ -551,22 +564,24 @@ function TableView() {
     [onRefresh, establishment]
   );
 
-  const onAbsent = React.useCallback((employeeId, hour, leaveReasonSelect) => {
-    const data = {
-      action:
-        "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceDayPlanning",
-      data: {
-        employeeId,
-        leaveReasonSelect,
-        hour,
-        date: moment(date, "DD-MM-YYYY")
-          .format("YYYY-MM-DD")
-      }
-    };
-    employeeService.action(data).then(res => {
-      onRefresh();
-    })
-  }, [onRefresh, date])
+  const onAbsent = React.useCallback(
+    (employeeId, hour, leaveReasonSelect) => {
+      const data = {
+        action:
+          "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceDayPlanning",
+        data: {
+          employeeId,
+          leaveReasonSelect,
+          hour,
+          date: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+        }
+      };
+      employeeService.action(data).then(res => {
+        onRefresh();
+      });
+    },
+    [onRefresh, date]
+  );
 
   const handleEstablishmentChange = React.useCallback(e => {
     setEstablishment(e.target.value);
@@ -587,7 +602,7 @@ function TableView() {
         } else {
           setVersionList([]);
         }
-        setVersion('');
+        setVersion("");
       });
     }
   }, [establishment]);
@@ -597,7 +612,7 @@ function TableView() {
       action:
         "com.axelor.apps.orpea.planning.web.EmploymentContractController:saveNewVersion",
       data: {
-        planningVersionId: version,
+        planningVersionId: version
       }
     };
     employeeService.action(data).then(res => {
@@ -609,7 +624,7 @@ function TableView() {
 
   const handleLock = React.useCallback(() => {
     setLock(l => !l);
-  }, [])
+  }, []);
 
   React.useEffect(() => {
     fetchEstVersion();
@@ -627,13 +642,15 @@ function TableView() {
     });
     employeeService.info().then(res => {
       const data = {
-        _domain: `self.code='${res['user.group']}'`
+        _domain: `self.code='${res["user.group"]}'`
       };
-      groupService.search({fields: ['name', 'code', 'isDe'], data}).then(res => {
-        if(res && res.data[0]) {
-          setIsDe(res.data[0].isDe);
-        }
-      })
+      groupService
+        .search({ fields: ["name", "code", "isDe"], data })
+        .then(res => {
+          if (res && res.data[0]) {
+            setIsDe(res.data[0].isDe);
+          }
+        });
     });
   }, []);
 
@@ -728,8 +745,7 @@ function TableView() {
             className={classes.fixCell}
             style={{ textAlign: "center" }}
           >
-            {
-              isDe &&
+            {isDe && (
               <Button
                 style={{
                   padding: "0px 2px"
@@ -739,9 +755,9 @@ function TableView() {
                 color="default"
                 onClick={handleLock}
               >
-                {!lock ? 'VERROUILLER' : 'DÉVERROUILLER'}
+                {!lock ? "VERROUILLER" : "DÉVERROUILLER"}
               </Button>
-            }
+            )}
           </TableCell>
           <TableCell className={classes.fixCell}>
             <Button
@@ -831,7 +847,13 @@ function TableView() {
       <TableBody>
         {!isLoading ? (
           data.map((serivce, i) => (
-            <TableService service={serivce} key={i} onChange={onChange} onAbsent={onAbsent} lock={lock} />
+            <TableService
+              service={serivce}
+              key={i}
+              onChange={onChange}
+              onAbsent={onAbsent}
+              lock={lock}
+            />
           ))
         ) : (
           <div
