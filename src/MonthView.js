@@ -52,6 +52,9 @@ const establishmentService = new AxelorService({
 const versionService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.PlanningVersion"
 });
+const occupationService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.OccupationRate"
+});
 
 const useStyles = makeStyles(theme => ({
   container: {
@@ -95,6 +98,10 @@ const useStyles = makeStyles(theme => ({
     border: "1px solid #eeeeee",
     top: -1,
     width: 300
+  },
+  occupationTitle: {
+    fontWeight: 'bold',
+    textAlign: 'center',
   }
 }));
 
@@ -393,6 +400,7 @@ function MonthView() {
   const [versionList, setVersionList] = React.useState([]);
   const [establishment, setEstablishment] = React.useState("");
   const [version, setVersion] = React.useState("");
+  const [occupationRates, setOccupationRates] = React.useState([]);
 
   const getDaysInMonth = React.useCallback(month => {
     return moment(month, MONTH_FORMAT).daysInMonth();
@@ -509,7 +517,8 @@ function MonthView() {
               };
 
               const getEmployeeList = (profileId, serviceId) => {
-                return employeeData.map(emp => {
+                const list = []
+                employeeData.forEach(emp => {
                   if(emp.profile.id === profileId && emp.service.id === serviceId) {
                     const empObject = {
                       name:
@@ -520,10 +529,10 @@ function MonthView() {
                     delete empObject.employee;
                     delete empObject.profile;
                     delete empObject.service;
-                    return {...empObject}
+                    list.push({...empObject});
                   }
-                  return undefined;
-                }).filter(e => e);
+                });
+                return list;
               }
 
               profileData.forEach(_profile => {
@@ -546,13 +555,11 @@ function MonthView() {
                   profileIndex === -1
                     ? getProfile(_profile.profile, _profile.service)
                     : service.profiles[profileIndex];
-                const employeeList = getEmployeeList(profile.profileId, profile.serviceId); 
-                profile.employees.push(
-                  ...employeeList
-                );
-                if (profileIndex !== -1) {
-                  service.profiles[profileIndex] = { ...profile };
-                } else {
+                if (profileIndex === -1) {
+                  const employeeList = getEmployeeList(profile.profileId, profile.serviceId); 
+                  profile.employees.push(
+                    ...employeeList
+                  );
                   service.profiles.push({ ...profile });
                 }
                 if (serviceIndex !== -1) {
@@ -705,15 +712,17 @@ function MonthView() {
   const fetchEstVersion = React.useCallback(() => {
     if (establishment) {
       const data = {
-        _domain: `self.establishment.id = ${establishment}`
+        _domain: `self.establishment.id = ${establishment}`,
       };
-      versionService.search({ fields: ["name"], data }).then(res => {
-        if (res && res.data) {
+      const sortBy = ["-versionNumber"]
+      versionService.search({ fields: ["name", "versionNumber"], data, sortBy }).then(res => {
+        if (res && res.data) {  
           setVersionList([...res.data]);
+          setVersion(res.data[0].id);
         } else {
           setVersionList([]);
+          setVersion('');
         }
-        setVersion('');
       });
     }
   }, [establishment]);
@@ -769,7 +778,13 @@ function MonthView() {
         .startOf('month')
         .add(day, "days")
         .format("YYYY-MM-DD")
-  }, [month])
+  }, [month]);
+
+  const getDayRate = React.useCallback((day) => {
+    const date = getDateFromDay(day);
+    const rate = occupationRates.find(o => o.dayDate === date);
+    return rate ? rate.dailyRate : ''
+  }, [getDateFromDay, occupationRates]);
 
   React.useEffect(() => {
     fetchEstVersion();
@@ -780,15 +795,31 @@ function MonthView() {
   }, [fetchData]);
 
   React.useEffect(() => {
+    if(establishment) {
+      const _month = moment(month, MONTH_FORMAT);
+      const from = _month.startOf('month').format("YYYY-MM-DD");
+      const to = _month.endOf('month').format("YYYY-MM-DD");
+      const data = {
+        _domain: `self.establishment.id = ${establishment} and self.dayDate >= '${from}' and self.dayDate <= '${to}'`,
+      }
+      occupationService.search({fields: ['dayDate', 'dailyRate'], data, sortBy: ['dayDate']}).then(res => {
+        if(res && res.data) {
+          setOccupationRates([...res.data]);
+        }
+      });
+    }
+  }, [month, establishment])
+
+  React.useEffect(() => {
     establishmentService.search({ fields: ["name"] }).then(res => {
       if (res && res.data) {
         setEstablishmentList([...res.data]);
+        setEstablishment(res.data[0].id);
       }
     });
   }, []);
 
   const classes = useStyles();
-
   const renderTable = React.useMemo(() => {
     const days = getDaysInMonth(month);
     const initials = getDaysInititals(month);
@@ -1044,7 +1075,9 @@ function MonthView() {
               colSpan={2}
               className={classes.topCell}
               style={{ top: 125 }}
-            ></TableCell>
+            >
+              <Typography className={classes.occupationTitle}>Taux d'occupation</Typography>
+            </TableCell>
             {new Array(days).fill(0).map((_, i) => (
               <TableCell
                 key={i}
@@ -1067,6 +1100,7 @@ function MonthView() {
                       input: classes.input
                     }
                   }}
+                  value={getDayRate(i)}
                   onKeyPress={e => {
                     if (e.key === "Enter") {
                       onInputChange(e.target.value, i + 1);
@@ -1144,7 +1178,8 @@ function MonthView() {
     onAbsent,
     onSaveVersion,
     onActionSave,
-    getDateFromDay
+    getDateFromDay,
+    getDayRate,
   ]);
 
   return (
