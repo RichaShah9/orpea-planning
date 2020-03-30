@@ -76,7 +76,7 @@ const useStyles = makeStyles(theme => ({
     top: 0,
     left: 0,
     zIndex: 1,
-    width: 300,
+    width: 350,
     background: "#f9f9fc",
     border: "1px solid #eeeeee"
   },
@@ -98,7 +98,7 @@ const useStyles = makeStyles(theme => ({
     background: "#f9f9fc",
     border: "1px solid #eeeeee",
     top: -1,
-    width: 300
+    width: 350
   },
   occupationTitle: {
     fontWeight: "bold",
@@ -900,14 +900,16 @@ function MonthView() {
                 Refresh
               </Button>
               <Button
-                style={{ padding: "0px 2px", marginLeft: 10 }}
+                style={{
+                  padding: "0px 2px",
+                  marginLeft: 10
+                }}
                 size="small"
                 variant="outlined"
                 color="default"
-                onClick={toggleDialog}
-                startIcon={<AddIcon />}
+                onClick={onSaveVersion}
               >
-                Ajouter employé
+                Sauvegarder nouvelle version
               </Button>
             </TableCell>
             <TableCell
@@ -1053,15 +1055,14 @@ function MonthView() {
               style={{ top: 75 }}
             >
               <Button
-                style={{
-                  padding: "0px 2px"
-                }}
+                style={{ padding: "0px 2px" }}
                 size="small"
                 variant="outlined"
                 color="default"
-                onClick={onSaveVersion}
+                onClick={toggleDialog}
+                startIcon={<AddIcon />}
               >
-                Sauvegarder nouvelle version
+                Ajouter employé
               </Button>
             </TableCell>
             {initials.map((c, i) => (
