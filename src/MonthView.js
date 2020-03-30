@@ -1055,7 +1055,7 @@ function MonthView() {
               style={{ top: 75 }}
             >
               <Button
-                style={{ padding: "0px 2px" }}
+                style={{ padding: "0px 2px", marginTop: 5, marginBottom: 5 }}
                 size="small"
                 variant="outlined"
                 color="default"
