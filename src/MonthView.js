@@ -187,9 +187,9 @@ function TableEmployee({
           <Typography
             style={{ padding: "0px 8px", marginLeft: 60 }}
             noWrap
-            title={employee.name}
+            title={(employee["employmentContract.employee"] || {}).name}
           >
-            {employee.name}
+            {(employee["employmentContract.employee"] || {}).name}
           </Typography>
         </TableCell>
 
