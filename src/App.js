@@ -836,20 +836,7 @@ function TableView() {
               </Button>
             )}
           </TableCell>
-          <TableCell className={classes.fixCell}>
-            <Button
-              style={{
-                padding: "0px 2px"
-              }}
-              size="small"
-              variant="outlined"
-              color="default"
-              onClick={onSaveVersion}
-              disabled={lock}
-            >
-              Sauvegarder nouvelle version
-            </Button>
-          </TableCell>
+          <TableCell className={classes.fixCell}></TableCell>
         </TableRow>
         <TableRow>
           <TableCell
@@ -919,6 +906,27 @@ function TableView() {
             className={classes.fixCell}
             style={{ top: 25 }}
           ></TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell
+            align="center"
+            colSpan={2}
+            style={{ background: "#f9f9fc" }}
+          >
+            <Button
+              style={{
+                padding: "0px 2px"
+              }}
+              size="small"
+              variant="outlined"
+              color="default"
+              onClick={onSaveVersion}
+              disabled={lock}
+            >
+              Sauvegarder nouvelle version
+            </Button>
+          </TableCell>
+          <TableCell colSpan={16} style={{ background: "#f9f9fc" }}></TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
