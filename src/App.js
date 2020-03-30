@@ -103,7 +103,7 @@ const useStyles = makeStyles(() => ({
   },
   input: {
     padding: "2px 1px",
-    textAlign: 'center',
+    textAlign: "center"
   },
   topCell: {
     position: "sticky",
@@ -113,13 +113,13 @@ const useStyles = makeStyles(() => ({
     border: "1px solid #eeeeee"
   },
   occupationTitle: {
-    display: 'inline',
+    display: "inline",
     marginRight: 8,
-    fontWeight: 'bold',
-    marginLeft: 2,
+    fontWeight: "bold",
+    marginLeft: 2
   },
   dailyRateField: {
-    width: 45,
+    width: 45
   }
 }));
 
@@ -652,18 +652,20 @@ function TableView() {
   }, [fetchEstVersion, initialFetch]);
 
   React.useEffect(() => {
-    if(establishment) {
+    if (establishment) {
       const _date = moment(date, "DD-MM-YYYY").format("YYYY-MM-DD");
       const data = {
-        _domain: `self.establishment.id = ${establishment} and self.dayDate = '${_date}'`,
-      }
-      occupationService.search({fields: ['dayDate', 'dailyRate'], data, sortBy: ['dayDate']}).then(res => {
-        if(res && res.data && res.data[0]) {
-          setDailyRate(res.data[0].dailyRate || '');
-        }
-      });
+        _domain: `self.establishment.id = ${establishment} and self.dayDate = '${_date}'`
+      };
+      occupationService
+        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
+        .then(res => {
+          if (res && res.data && res.data[0]) {
+            setDailyRate(res.data[0].dailyRate || "");
+          }
+        });
     }
-  }, [date, establishment])
+  }, [date, establishment]);
 
   React.useEffect(() => {
     setLoading(true);
@@ -705,7 +707,7 @@ function TableView() {
         setInitialFetch(true);
         fetchData(undefined, undefined, date);
       });
-    if(!initialFetch) {
+    if (!initialFetch) {
       employeeService.info().then(res => {
         const data = {
           _domain: `self.code='${res["user.group"]}'`
@@ -763,7 +765,9 @@ function TableView() {
             </Button>
           </TableCell>
           <TableCell colSpan={5} width="200px" className={classes.fixCell}>
-            <Typography className={classes.occupationTitle}>Taux d'occupation :</Typography>
+            <Typography className={classes.occupationTitle}>
+              Taux d'occupation :
+            </Typography>
             <TextField
               className={classes.inputCell}
               variant="outlined"
