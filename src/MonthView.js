@@ -419,6 +419,7 @@ function MonthView() {
   const [establishment, setEstablishment] = React.useState("");
   const [version, setVersion] = React.useState("");
   const [occupationRates, setOccupationRates] = React.useState([]);
+  const [dayList, setDayList] = React.useState([]);
 
   const getDaysInMonth = React.useCallback(month => {
     return moment(month, MONTH_FORMAT).daysInMonth();
@@ -814,23 +815,25 @@ function MonthView() {
 
   const getDayRate = React.useCallback(
     day => {
-      const date = getDateFromDay(day);
-      const rate = occupationRates.find(o => o.dayDate === date);
+      const rate = occupationRates.find(o => o.dayDate === day);
       return rate ? rate.dailyRate : "";
     },
-    [getDateFromDay, occupationRates]
+    [occupationRates]
   );
 
   const setDayRate = React.useCallback(
     (value, day) => {
-      const date = getDateFromDay(day);
       setOccupationRates(rates => {
-        const index = rates.findIndex(o => o.dayDate === date);
-        rates[index].dailyRate = value;
+        const index = rates.findIndex(o => o.dayDate === day);
+        if(index !== -1) {
+          rates[index].dailyRate = value;
+        } else {
+          rates.push({dayDate: day, dailyRate: value});
+        }
         return [...rates];
       });
     },
-    [getDateFromDay]
+    []
   );
 
   React.useEffect(() => {
@@ -854,10 +857,19 @@ function MonthView() {
         .then(res => {
           if (res && res.data) {
             setOccupationRates([...res.data]);
+          } else {
+            setOccupationRates([]);
           }
         });
     }
   }, [month, establishment]);
+
+  React.useEffect(() => {
+    const days = getDaysInMonth(month);
+    const list = Array(days).fill(0).map((_, i) => getDateFromDay(i));
+    console.log(list);
+    setDayList([...list]);
+  }, [month, getDaysInMonth, getDateFromDay])
 
   React.useEffect(() => {
     establishmentService.search({ fields: ["name"] }).then(res => {
@@ -1125,7 +1137,7 @@ function MonthView() {
                 Taux d'occupation
               </Typography>
             </TableCell>
-            {new Array(days).fill(0).map((_, i) => (
+            {dayList.map((_, i) => (
               <TableCell
                 key={i}
                 className={classes.fixCell}
@@ -1147,8 +1159,8 @@ function MonthView() {
                       input: classes.input
                     }
                   }}
-                  value={getDayRate(i)}
-                  onChange={e => setDayRate(e.target.value, i)}
+                  value={getDayRate(_)}
+                  onChange={e => setDayRate(e.target.value, _)}
                   onKeyPress={e => {
                     if (e.key === "Enter") {
                       onInputChange(e.target.value, i + 1);
