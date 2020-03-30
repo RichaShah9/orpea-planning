@@ -731,7 +731,7 @@ function TableView() {
                 color="default"
                 onClick={handleLock}
               >
-                {!lock ? 'VERROUILLER PLANNING' : 'DÉVERROUILLER'}
+                {!lock ? 'VERROUILLER' : 'DÉVERROUILLER'}
               </Button>
             }
           </TableCell>
