@@ -87,7 +87,7 @@ const useStyles = makeStyles(() => ({
     top: 0,
     left: 0,
     zIndex: 2,
-    width: 300,
+    width: 350,
     background: "#f9f9fc",
     border: "1px solid #eeeeee !important"
   },
@@ -742,7 +742,7 @@ function TableView() {
               top: -1
             }}
             className={classes.topCell}
-            width="300px"
+            width="350px"
           >
             <Button
               style={{
@@ -757,15 +757,17 @@ function TableView() {
               Refresh
             </Button>
             <Button
-              style={{ padding: "0px 2px", marginLeft: 10 }}
+              style={{
+                padding: "0px 2px",
+                marginLeft: 10
+              }}
               size="small"
               variant="outlined"
               color="default"
-              startIcon={<AddIcon />}
-              onClick={toggleDialog}
+              onClick={onSaveVersion}
               disabled={lock}
             >
-              Ajouter employé
+              Sauvegarder nouvelle version
             </Button>
           </TableCell>
           <TableCell colSpan={5} width="250px" className={classes.fixCell}>
@@ -850,7 +852,7 @@ function TableView() {
             style={{
               top: 25
             }}
-            width="300px"
+            width="350px"
           >
             <div style={{ display: "flex", justifyContent: "space-around" }}>
               <FormControl className={classes.formControl}>
@@ -921,16 +923,15 @@ function TableView() {
             style={{ top: 75 }}
           >
             <Button
-              style={{
-                padding: "0px 2px"
-              }}
+              style={{ padding: "0px 2px" }}
               size="small"
               variant="outlined"
               color="default"
-              onClick={onSaveVersion}
+              startIcon={<AddIcon />}
+              onClick={toggleDialog}
               disabled={lock}
             >
-              Sauvegarder nouvelle version
+              Ajouter employé
             </Button>
           </TableCell>
           <TableCell
