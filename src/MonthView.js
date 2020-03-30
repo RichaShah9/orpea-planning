@@ -787,6 +787,15 @@ function MonthView() {
     return rate ? rate.dailyRate : ''
   }, [getDateFromDay, occupationRates]);
 
+  const setDayRate = React.useCallback((value, day) => {
+    const date = getDateFromDay(day);
+    setOccupationRates(rates => {
+      const index = rates.findIndex(o => o.dayDate === date);
+      rates[index].dailyRate = value;
+      return [...rates]
+    })
+  }, [getDateFromDay]);
+
   React.useEffect(() => {
     fetchEstVersion();
   }, [fetchEstVersion]);
@@ -1102,6 +1111,7 @@ function MonthView() {
                     }
                   }}
                   value={getDayRate(i)}
+                  onChange={(e) => setDayRate(e.target.value, i)}
                   onKeyPress={e => {
                     if (e.key === "Enter") {
                       onInputChange(e.target.value, i + 1);
