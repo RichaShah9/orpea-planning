@@ -337,174 +337,173 @@ function TableView() {
   const [version, setVersion] = React.useState("");
   const [lock, setLock] = React.useState(true);
   const [isDe, setIsDe] = React.useState(false);
+  const [initialFetch, setInitialFetch] = React.useState(false);
   const classes = useStyles();
+
   const [date, setDate] = React.useState(
     moment(new Date()).format("DD-MM-YYYY")
   );
+
   const [isLoading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const fetchData = React.useCallback(
-    (establishment, version) => {
-      setLoading(true);
-      const profileFields = [
-        "service",
-        "employmentContract",
-        "dayDate",
-        "profile",
-        "establishment",
-        "planningVersion",
-        "employeeNbRequired",
-        ...getColorFields(),
-        ...getTextFields(),
-        ...getPopupTextFields(),
-        ...getEmployeeNbFields()
-      ];
-      const employeeFields = [...profileFields, "profile"];
-      let _domain = null;
-      if (establishment) {
-        _domain = `self.establishment.id = ${establishment}`;
-      }
-      if (version) {
-        _domain = `${_domain} and self.planningVersion = ${version}`;
-      }
-      const data = {
-        criteria: [
-          {
-            fieldName: "dayDate",
-            operator: "=",
-            value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
-          }
-        ],
-        _domain,
-        op: "and"
-      };
-      const serviceList = [];
-      const getServiceIndex = serviceId => {
-        return serviceList.findIndex(s => s.id === serviceId);
-      };
-      const getProfileIndex = (list, profileId, serviceId) => {
-        return list.findIndex(
-          p => p.profileId === profileId && p.serviceId === serviceId
-        );
-      };
+  const fetchData = React.useCallback((establishment, version, date) => {
+    setLoading(true);
+    const profileFields = [
+      "service",
+      "employmentContract",
+      "dayDate",
+      "profile",
+      "establishment",
+      "planningVersion",
+      "employeeNbRequired",
+      ...getColorFields(),
+      ...getTextFields(),
+      ...getPopupTextFields(),
+      ...getEmployeeNbFields()
+    ];
+    const employeeFields = [...profileFields, "profile"];
+    let _domain = null;
+    if (establishment) {
+      _domain = `self.establishment.id = ${establishment}`;
+    }
+    if (version) {
+      _domain = `${_domain} and self.planningVersion = ${version}`;
+    }
+    const data = {
+      criteria: [
+        {
+          fieldName: "dayDate",
+          operator: "=",
+          value: moment(date, "DD-MM-YYYY").format("YYYY-MM-DD")
+        }
+      ],
+      _domain,
+      op: "and"
+    };
+    const serviceList = [];
+    const getServiceIndex = serviceId => {
+      return serviceList.findIndex(s => s.id === serviceId);
+    };
+    const getProfileIndex = (list, profileId, serviceId) => {
+      return list.findIndex(
+        p => p.profileId === profileId && p.serviceId === serviceId
+      );
+    };
 
-      profileService.search({ fields: profileFields, data }).then(res => {
-        employeeService
-          .search({ fields: employeeFields, data })
-          .then(employeeResponse => {
-            if (!res || !employeeResponse) {
-              setLoading(false);
-              return;
-            }
-            const { data: profileData = [] } = res;
-            const { data: employeeData = [] } = employeeResponse;
-            const getProfile = (profile, service) => {
-              const _profile =
-                profileData.find(
-                  p =>
-                    p.profile &&
-                    p.profile.id === profile.id &&
-                    p.service.id === service.id
-                ) || {};
-              const profileObject = {
-                ..._profile,
-                name: profile.name,
-                profileId: profile.id,
-                serviceId: service.id,
-                employees: []
-              };
-              delete profileObject.profile;
-              delete profileObject.service;
-              return profileObject;
-            };
-
-            const getEmployeeList = (profileId, serviceId) => {
-              return employeeData
-                .map(emp => {
-                  if (
-                    emp.profile.id === profileId &&
-                    emp.service.id === serviceId
-                  ) {
-                    const empObject = {
-                      name:
-                        emp.employmentContract &&
-                        emp.employmentContract.fullName,
-                      ...emp
-                    };
-                    delete empObject.employee;
-                    delete empObject.profile;
-                    delete empObject.service;
-                    return { ...empObject };
-                  }
-                  return undefined;
-                })
-                .filter(e => e);
-            };
-
-            profileData.forEach(_profile => {
-              const serviceIndex = getServiceIndex(_profile.service.id);
-              const service =
-                serviceIndex === -1
-                  ? {
-                      name: _profile.service.name,
-                      id: _profile.service.id,
-                      profiles: []
-                    }
-                  : serviceList[serviceIndex];
-
-              const profileIndex = getProfileIndex(
-                service.profiles,
-                _profile.profile.id,
-                _profile.service.id
-              );
-              const profile =
-                profileIndex === -1
-                  ? getProfile(_profile.profile, _profile.service)
-                  : service.profiles[profileIndex];
-              const employeeList = getEmployeeList(
-                profile.profileId,
-                profile.serviceId
-              );
-              profile.employees.push(...employeeList);
-              if (profileIndex !== -1) {
-                service.profiles[profileIndex] = { ...profile };
-              } else {
-                service.profiles.push({ ...profile });
-              }
-              if (serviceIndex !== -1) {
-                serviceList[serviceIndex] = { ...service };
-              } else {
-                serviceList.push({ ...service });
-              }
-            });
-            setData(serviceList);
+    profileService.search({ fields: profileFields, data }).then(res => {
+      employeeService
+        .search({ fields: employeeFields, data })
+        .then(employeeResponse => {
+          if (!res || !employeeResponse) {
             setLoading(false);
+            return;
+          }
+          const { data: profileData = [] } = res;
+          const { data: employeeData = [] } = employeeResponse;
+          const getProfile = (profile, service) => {
+            const _profile =
+              profileData.find(
+                p =>
+                  p.profile &&
+                  p.profile.id === profile.id &&
+                  p.service.id === service.id
+              ) || {};
+            const profileObject = {
+              ..._profile,
+              name: profile.name,
+              profileId: profile.id,
+              serviceId: service.id,
+              employees: []
+            };
+            delete profileObject.profile;
+            delete profileObject.service;
+            return profileObject;
+          };
+
+          const getEmployeeList = (profileId, serviceId) => {
+            return employeeData
+              .map(emp => {
+                if (
+                  emp.profile.id === profileId &&
+                  emp.service.id === serviceId
+                ) {
+                  const empObject = {
+                    name:
+                      emp.employmentContract && emp.employmentContract.fullName,
+                    ...emp
+                  };
+                  delete empObject.employee;
+                  delete empObject.profile;
+                  delete empObject.service;
+                  return { ...empObject };
+                }
+                return undefined;
+              })
+              .filter(e => e);
+          };
+
+          profileData.forEach(_profile => {
+            const serviceIndex = getServiceIndex(_profile.service.id);
+            const service =
+              serviceIndex === -1
+                ? {
+                    name: _profile.service.name,
+                    id: _profile.service.id,
+                    profiles: []
+                  }
+                : serviceList[serviceIndex];
+
+            const profileIndex = getProfileIndex(
+              service.profiles,
+              _profile.profile.id,
+              _profile.service.id
+            );
+            const profile =
+              profileIndex === -1
+                ? getProfile(_profile.profile, _profile.service)
+                : service.profiles[profileIndex];
+            const employeeList = getEmployeeList(
+              profile.profileId,
+              profile.serviceId
+            );
+            profile.employees.push(...employeeList);
+            if (profileIndex !== -1) {
+              service.profiles[profileIndex] = { ...profile };
+            } else {
+              service.profiles.push({ ...profile });
+            }
+            if (serviceIndex !== -1) {
+              serviceList[serviceIndex] = { ...service };
+            } else {
+              serviceList.push({ ...service });
+            }
           });
-      });
-    },
-    [date]
-  );
+          setData(serviceList);
+          setLoading(false);
+        });
+    });
+  }, []);
 
   const onPrevious = React.useCallback(() => {
-    setDate(
-      moment(date, "DD-MM-YYYY")
-        .subtract(1, "days")
-        .format("DD-MM-YYYY")
-    );
-  }, [date]);
+    const newDate = moment(date, "DD-MM-YYYY")
+      .subtract(1, "days")
+      .format("DD-MM-YYYY");
+    setDate(newDate);
+    fetchData(establishment, version, newDate);
+  }, [date, establishment, version, fetchData]);
 
   const onNext = React.useCallback(() => {
-    setDate(
-      moment(date, "DD-MM-YYYY")
-        .add(1, "days")
-        .format("DD-MM-YYYY")
-    );
-  }, [date]);
+    const newDate = moment(date, "DD-MM-YYYY")
+      .add(1, "days")
+      .format("DD-MM-YYYY");
+    setDate(newDate);
+    fetchData(establishment, version, newDate);
+  }, [date, establishment, version, fetchData]);
 
   const onRefresh = React.useCallback(() => {
-    fetchData(establishment, version);
-  }, [fetchData, establishment, version]);
+    fetchData(establishment, version, date);
+  }, [fetchData, establishment, version, date]);
 
   const toggleDialog = React.useCallback(
     (shouldRefresh = false) => {
@@ -595,14 +594,22 @@ function TableView() {
       const data = {
         _domain: `self.establishment.id = ${establishment}`
       };
-      versionService.search({ fields: ["name"], data }).then(res => {
-        if (res && res.data) {
-          setVersionList([...res.data]);
-        } else {
-          setVersionList([]);
-        }
-        setVersion("");
-      });
+      versionService
+        .search({
+          fields: ["name", "versionNumber"],
+          sortBy: ["-versionNumber"],
+          data
+        })
+        .then(res => {
+          if (res && res.data && res.data.length) {
+            const version = res.data[0].id;
+            setVersionList([...res.data]);
+            setVersion(version);
+          } else {
+            setVersionList([]);
+            setVersion("");
+          }
+        });
     }
   }, [establishment]);
 
@@ -626,19 +633,51 @@ function TableView() {
   }, []);
 
   React.useEffect(() => {
+    if (!initialFetch) return;
     fetchEstVersion();
-  }, [fetchEstVersion]);
+  }, [fetchEstVersion, initialFetch]);
 
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    setLoading(true);
+    establishmentService
+      .search({ fields: ["name"] })
+      .then(res => {
+        if (res && res.data && res.data.length) {
+          const establishment = res.data[0].id;
+          setEstablishmentList([...res.data]);
+          setEstablishment(establishment);
 
-  React.useEffect(() => {
-    establishmentService.search({ fields: ["name"] }).then(res => {
-      if (res && res.data) {
-        setEstablishmentList([...res.data]);
-      }
-    });
+          const data = {
+            _domain: `self.establishment.id = ${establishment}`
+          };
+
+          versionService
+            .search({
+              fields: ["name", "versionNumber"],
+              sortBy: ["-versionNumber"],
+              data
+            })
+            .then(res => {
+              let version = "";
+              if (res && res.data && res.data.length) {
+                version = res.data[0].id;
+                setVersionList([...res.data]);
+              } else {
+                setVersionList([]);
+              }
+              setVersion(version);
+              setInitialFetch(true);
+              setLoading(false);
+              fetchData(establishment, version, date);
+            });
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        setInitialFetch(true);
+        fetchData(undefined, undefined, date);
+      });
+
     employeeService.info().then(res => {
       const data = {
         _domain: `self.code='${res["user.group"]}'`
@@ -651,7 +690,7 @@ function TableView() {
           }
         });
     });
-  }, []);
+  }, [fetchData, date]);
 
   return (
     <Table
