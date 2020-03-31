@@ -40,18 +40,26 @@ const TableCell = React.forwardRef(({ children, style = {}, ...rest }, ref) => (
   </MuiTableCell>
 ));
 
+const serviceService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.Service"
+});
+
 const profileMonthService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.ProfileMonth"
 });
+
 const employeeMonthService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeMonth"
 });
+
 const establishmentService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.Establishment"
 });
+
 const versionService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.PlanningVersion"
 });
+
 const occupationService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.OccupationRate"
 });
@@ -502,100 +510,120 @@ function MonthView() {
         );
       };
 
-      profileMonthService
+      serviceService
         .search({
-          fields: profileFields,
-          data: getQueryData(month, establishment, planningVersion)
+          fields: ["name", "sequence"],
+          data: {}
         })
         .then(res => {
-          employeeMonthService
+          const services = (res && res.data) || [];
+
+          const getServiceSequence = serviceId => {
+            const { sequence } = services.find(s => s.id === serviceId) || {};
+            return [null, undefined].includes(sequence) ? -1 : sequence;
+          };
+
+          profileMonthService
             .search({
-              fields: employeeFields,
+              fields: profileFields,
               data: getQueryData(month, establishment, planningVersion)
             })
-            .then(employeeResponse => {
-              if (!res || !employeeResponse) {
-                setLoading(false);
-                return;
-              }
-              const { data: profileData = [] } = res;
-              const { data: employeeData = [] } = employeeResponse;
-              const getProfile = (profile, service) => {
-                const _profile =
-                  profileData.find(
-                    p =>
-                      p.profile.id === profile.id && p.service.id === service.id
-                  ) || {};
-                const profileObject = {
-                  ..._profile,
-                  name: profile.name,
-                  profileId: profile.id,
-                  serviceId: service.id,
-                  employees: []
-                };
-                delete profileObject.profile;
-                delete profileObject.service;
-                return profileObject;
-              };
-
-              const getEmployeeList = (profileId, serviceId) => {
-                const list = [];
-                employeeData.forEach(emp => {
-                  if (
-                    emp.profile.id === profileId &&
-                    emp.service.id === serviceId
-                  ) {
-                    const empObject = {
-                      name:
-                        emp.employmentContract &&
-                        emp.employmentContract.fullName,
-                      ...emp
-                    };
-                    delete empObject.employee;
-                    delete empObject.profile;
-                    delete empObject.service;
-                    list.push({ ...empObject });
+            .then(res => {
+              employeeMonthService
+                .search({
+                  fields: employeeFields,
+                  data: getQueryData(month, establishment, planningVersion)
+                })
+                .then(employeeResponse => {
+                  if (!res || !employeeResponse) {
+                    setLoading(false);
+                    return;
                   }
-                });
-                return list;
-              };
+                  const { data: profileData = [] } = res;
+                  const { data: employeeData = [] } = employeeResponse;
+                  const getProfile = (profile, service) => {
+                    const _profile =
+                      profileData.find(
+                        p =>
+                          p.profile.id === profile.id &&
+                          p.service.id === service.id
+                      ) || {};
+                    const profileObject = {
+                      ..._profile,
+                      name: profile.name,
+                      profileId: profile.id,
+                      serviceId: service.id,
+                      employees: []
+                    };
+                    delete profileObject.profile;
+                    delete profileObject.service;
+                    return profileObject;
+                  };
 
-              profileData.forEach(_profile => {
-                const serviceIndex = getServiceIndex(_profile.service.id);
-                const service =
-                  serviceIndex === -1
-                    ? {
-                        name: _profile.service.name,
-                        id: _profile.service.id,
-                        profiles: []
+                  const getEmployeeList = (profileId, serviceId) => {
+                    const list = [];
+                    employeeData.forEach(emp => {
+                      if (
+                        emp.profile.id === profileId &&
+                        emp.service.id === serviceId
+                      ) {
+                        const empObject = {
+                          name:
+                            emp.employmentContract &&
+                            emp.employmentContract.fullName,
+                          ...emp
+                        };
+                        delete empObject.employee;
+                        delete empObject.profile;
+                        delete empObject.service;
+                        list.push({ ...empObject });
                       }
-                    : serviceList[serviceIndex];
+                    });
+                    return list;
+                  };
 
-                const profileIndex = getProfileIndex(
-                  service.profiles,
-                  _profile.profile.id,
-                  _profile.service.id
-                );
-                const profile =
-                  profileIndex === -1
-                    ? getProfile(_profile.profile, _profile.service)
-                    : service.profiles[profileIndex];
-                if (profileIndex === -1) {
-                  const employeeList = getEmployeeList(
-                    profile.profileId,
-                    profile.serviceId
-                  );
-                  profile.employees.push(...employeeList);
-                  service.profiles.push({ ...profile });
-                }
-                if (serviceIndex !== -1) {
-                  serviceList[serviceIndex] = { ...service };
-                } else {
-                  serviceList.push({ ...service });
-                }
-              });
-              setData(serviceList);
-              setLoading(false);
+                  profileData.forEach(_profile => {
+                    const serviceIndex = getServiceIndex(_profile.service.id);
+                    const service =
+                      serviceIndex === -1
+                        ? {
+                            name: _profile.service.name,
+                            id: _profile.service.id,
+                            profiles: [],
+                            sequence: getServiceSequence(_profile.service.id)
+                          }
+                        : serviceList[serviceIndex];
+
+                    const profileIndex = getProfileIndex(
+                      service.profiles,
+                      _profile.profile.id,
+                      _profile.service.id
+                    );
+                    const profile =
+                      profileIndex === -1
+                        ? getProfile(_profile.profile, _profile.service)
+                        : service.profiles[profileIndex];
+                    if (profileIndex === -1) {
+                      const employeeList = getEmployeeList(
+                        profile.profileId,
+                        profile.serviceId
+                      );
+                      profile.employees.push(...employeeList);
+                      service.profiles.push({ ...profile });
+                    }
+                    if (serviceIndex !== -1) {
+                      serviceList[serviceIndex] = { ...service };
+                    } else {
+                      serviceList.push({ ...service });
+                    }
+                  });
+                  setData(
+                    serviceList.sort((a, b) =>
+                      a.sequence > b.sequence ? -1 : 1
+                    )
+                  ); // Sort based on sequence
+                  setLoading(false);
+                });
             });
         });
     },
