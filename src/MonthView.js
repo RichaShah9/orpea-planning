@@ -180,6 +180,7 @@ function TableEmployee({
     },
     [employee, onChange]
   );
+
   return (
     <>
       <TableRow className={cs({ [classes.hidden]: hidden })}>
@@ -211,7 +212,9 @@ function TableEmployee({
             profile={profile}
             employee={employee}
             onColorChange={color => onEmployeeChange(key, color)}
-            onAbsent={value => onAbsent(employee.employeeId, i, value)}
+            onAbsent={value =>
+              onAbsent((employee.employmentContract || {}).id, i, value)
+            }
             dateNumber={i}
             onActionSave={actionData => onActionSave(actionData, i)}
             fromDate={getDateFromDay(i)}
@@ -755,12 +758,12 @@ function MonthView() {
   }, [establishment]);
 
   const onAbsent = React.useCallback(
-    (employeeId, dateNumber, leaveInfo) => {
+    (employmentContractId, dateNumber, leaveInfo) => {
       const data = {
         action:
           "com.axelor.apps.orpea.planning.web.EmploymentContractController:createAbsenceMonthPlanning",
         data: {
-          employeeId,
+          employmentContractId,
           ...leaveInfo
         }
       };
