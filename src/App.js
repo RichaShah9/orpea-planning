@@ -695,6 +695,10 @@ function TableView() {
   }, [fetchEstVersion, initialFetch]);
 
   React.useEffect(() => {
+    fetchDailyRate();
+  }, [fetchDailyRate])
+
+  React.useEffect(() => {
     setLoading(true);
     establishmentService
       .search({ fields: ["name"] })
@@ -748,8 +752,7 @@ function TableView() {
           });
       });
     }
-    fetchDailyRate();
-  }, [fetchData, date, initialFetch, fetchDailyRate]);
+  }, [fetchData, date, initialFetch]);
 
   return (
     <Table
