@@ -34,9 +34,14 @@ import LineForm from "./LineForm";
 
 import "./App.css";
 
+const serviceService = new AxelorService({
+  model: "com.axelor.apps.orpea.planning.db.Service"
+});
+
 const profileService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.ProfileDay"
 });
+
 const employeeService = new AxelorService({
   model: "com.axelor.apps.orpea.planning.db.EmployeeDay"
 });
@@ -406,99 +411,116 @@ function TableView() {
         p => p.profileId === profileId && p.serviceId === serviceId
       );
     };
+    serviceService
+      .search({
+        fields: ["name", "sequence"],
+        data: {}
+      })
+      .then(res => {
+        const services = (res && res.data) || [];
 
-    profileService.search({ fields: profileFields, data }).then(res => {
-      employeeService
-        .search({ fields: employeeFields, data })
-        .then(employeeResponse => {
-          if (!res || !employeeResponse) {
-            setLoading(false);
-            return;
-          }
-          const { data: profileData = [] } = res;
-          const { data: employeeData = [] } = employeeResponse;
-          const getProfile = (profile, service) => {
-            const _profile =
-              profileData.find(
-                p =>
-                  p.profile &&
-                  p.profile.id === profile.id &&
-                  p.service.id === service.id
-              ) || {};
-            const profileObject = {
-              ..._profile,
-              name: profile.name,
-              profileId: profile.id,
-              serviceId: service.id,
-              employees: []
-            };
-            delete profileObject.profile;
-            delete profileObject.service;
-            return profileObject;
-          };
+        const getServiceSequence = serviceId => {
+          const { sequence } = services.find(s => s.id === serviceId) || {};
+          return [null, undefined].includes(sequence) ? -1 : sequence;
+        };
 
-          const getEmployeeList = (profileId, serviceId) => {
-            return employeeData
-              .map(emp => {
-                if (
-                  emp.profile.id === profileId &&
-                  emp.service.id === serviceId
-                ) {
-                  const empObject = {
-                    name:
-                      emp.employmentContract && emp.employmentContract.fullName,
-                    ...emp
-                  };
-                  delete empObject.employee;
-                  delete empObject.profile;
-                  delete empObject.service;
-                  return { ...empObject };
+        profileService.search({ fields: profileFields, data }).then(res => {
+          employeeService
+            .search({ fields: employeeFields, data })
+            .then(employeeResponse => {
+              if (!res || !employeeResponse) {
+                setLoading(false);
+                return;
+              }
+              const { data: profileData = [] } = res;
+              const { data: employeeData = [] } = employeeResponse;
+              const getProfile = (profile, service) => {
+                const _profile =
+                  profileData.find(
+                    p =>
+                      p.profile &&
+                      p.profile.id === profile.id &&
+                      p.service.id === service.id
+                  ) || {};
+                const profileObject = {
+                  ..._profile,
+                  name: profile.name,
+                  profileId: profile.id,
+                  serviceId: service.id,
+                  employees: []
+                };
+                delete profileObject.profile;
+                delete profileObject.service;
+                return profileObject;
+              };
+
+              const getEmployeeList = (profileId, serviceId) => {
+                return employeeData
+                  .map(emp => {
+                    if (
+                      emp.profile.id === profileId &&
+                      emp.service.id === serviceId
+                    ) {
+                      const empObject = {
+                        name:
+                          emp.employmentContract &&
+                          emp.employmentContract.fullName,
+                        ...emp
+                      };
+                      delete empObject.employee;
+                      delete empObject.profile;
+                      delete empObject.service;
+                      return { ...empObject };
+                    }
+                    return undefined;
+                  })
+                  .filter(e => e);
+              };
+
+              profileData.forEach(_profile => {
+                const serviceIndex = getServiceIndex(_profile.service.id);
+                const service =
+                  serviceIndex === -1
+                    ? {
+                        name: _profile.service.name,
+                        id: _profile.service.id,
+                        profiles: [],
+                        sequence: getServiceSequence(_profile.service.id)
+                      }
+                    : serviceList[serviceIndex];
+
+                const profileIndex = getProfileIndex(
+                  service.profiles,
+                  _profile.profile.id,
+                  _profile.service.id
+                );
+                const profile =
+                  profileIndex === -1
+                    ? getProfile(_profile.profile, _profile.service)
+                    : service.profiles[profileIndex];
+                const employeeList = getEmployeeList(
+                  profile.profileId,
+                  profile.serviceId
+                );
+                profile.employees.push(...employeeList);
+                if (profileIndex !== -1) {
+                  service.profiles[profileIndex] = { ...profile };
+                } else {
+                  service.profiles.push({ ...profile });
                 }
-                return undefined;
-              })
-              .filter(e => e);
-          };
-
-          profileData.forEach(_profile => {
-            const serviceIndex = getServiceIndex(_profile.service.id);
-            const service =
-              serviceIndex === -1
-                ? {
-                    name: _profile.service.name,
-                    id: _profile.service.id,
-                    profiles: []
-                  }
-                : serviceList[serviceIndex];
-
-            const profileIndex = getProfileIndex(
-              service.profiles,
-              _profile.profile.id,
-              _profile.service.id
-            );
-            const profile =
-              profileIndex === -1
-                ? getProfile(_profile.profile, _profile.service)
-                : service.profiles[profileIndex];
-            const employeeList = getEmployeeList(
-              profile.profileId,
-              profile.serviceId
-            );
-            profile.employees.push(...employeeList);
-            if (profileIndex !== -1) {
-              service.profiles[profileIndex] = { ...profile };
-            } else {
-              service.profiles.push({ ...profile });
-            }
-            if (serviceIndex !== -1) {
-              serviceList[serviceIndex] = { ...service };
-            } else {
-              serviceList.push({ ...service });
-            }
-          });
-          setData(serviceList);
-          setLoading(false);
+                if (serviceIndex !== -1) {
+                  serviceList[serviceIndex] = { ...service };
+                } else {
+                  serviceList.push({ ...service });
+                }
+              });
+              setData(
+                serviceList.sort((a, b) => (a.sequence > b.sequence ? -1 : 1))
+              ); // Sort based on sequence
+              setLoading(false);
+            });
         });
-    });
+      });
   }, []);
 
   const onPrevious = React.useCallback(() => {
