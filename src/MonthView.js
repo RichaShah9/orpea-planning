@@ -657,7 +657,7 @@ function MonthView() {
   );
 
   const onInputChange = React.useCallback(
-    (input, key) => {
+    (input, key, date) => {
       const textFieldName = getText(key);
       const colorFieldName = `d${key}ColorSelect`;
       const fields = [
@@ -675,9 +675,11 @@ function MonthView() {
         data: {
           establishmentId: establishment,
           value: Number(input),
-          date: moment(month, MONTH_FORMAT)
-            .startOf("month")
-            .format("YYYY-MM-DD")
+          date:
+            date ||
+            moment(month, MONTH_FORMAT)
+              .startOf("month")
+              .format("YYYY-MM-DD")
         }
       };
       profileMonthService.action(data).then(res => {
@@ -866,7 +868,6 @@ function MonthView() {
     const list = Array(days)
       .fill(0)
       .map((_, i) => getDateFromDay(i));
-    console.log(list);
     setDayList([...list]);
   }, [month, getDaysInMonth, getDateFromDay]);
 
@@ -1168,7 +1169,7 @@ function MonthView() {
                   onChange={e => setDayRate(e.target.value, _)}
                   onKeyPress={e => {
                     if (e.key === "Enter") {
-                      onInputChange(e.target.value, i + 1);
+                      onInputChange(e.target.value, i + 1, _);
                       e.preventDefault();
                     }
                   }}
@@ -1244,7 +1245,9 @@ function MonthView() {
     onSaveVersion,
     onActionSave,
     getDateFromDay,
-    getDayRate
+    getDayRate,
+    dayList,
+    setDayRate
   ]);
 
   return (
