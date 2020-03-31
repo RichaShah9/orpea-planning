@@ -102,7 +102,7 @@ function PopupContent({
       {
         text &&
         <Typography gutterBottom>
-          <b>Info :</b> {text}
+          <b>Semaine n° :</b> {text}
         </Typography>
       }
       {!disableCheckbox && (
