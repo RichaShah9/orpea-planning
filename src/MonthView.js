@@ -431,7 +431,8 @@ function MonthView() {
   const [version, setVersion] = React.useState("");
   const [occupationRates, setOccupationRates] = React.useState([]);
   const [dayList, setDayList] = React.useState([]);
-
+  const [estPrefill, setEstPrefill] = React.useState(true);
+    
   const getDaysInMonth = React.useCallback(month => {
     return moment(month, MONTH_FORMAT).daysInMonth();
   }, []);
@@ -484,7 +485,7 @@ function MonthView() {
   }, []);
 
   const fetchData = React.useCallback(
-    (establishment, planningVersion) => {
+    (establishment, planningVersion, month) => {
       setLoading(true);
       const days = getDaysInMonth(month);
       const profileFields = [
@@ -627,7 +628,7 @@ function MonthView() {
             });
         });
     },
-    [month, getDaysInMonth]
+    [getDaysInMonth]
   );
 
   const fetchDailyRates = React.useCallback(() => {
@@ -651,25 +652,25 @@ function MonthView() {
   }, [establishment, month]);
 
   const onPrevious = React.useCallback(() => {
-    setMonth(
-      moment(month, MONTH_FORMAT)
-        .subtract(1, "M")
-        .format(MONTH_FORMAT)
-    );
-  }, [month]);
+    const _month = moment(month, MONTH_FORMAT)
+    .subtract(1, "M")
+    .format(MONTH_FORMAT);
+    setMonth(_month);
+    fetchData(establishment, version, _month);
+  }, [month, establishment, version, fetchData]);
 
   const onNext = React.useCallback(() => {
-    setMonth(
-      moment(month, MONTH_FORMAT)
-        .add(1, "M")
-        .format(MONTH_FORMAT)
-    );
-  }, [month]);
+    const _month = moment(month, MONTH_FORMAT)
+    .add(1, "M")
+    .format(MONTH_FORMAT);
+    setMonth(_month);
+    fetchData(establishment, version, _month);
+  }, [month, establishment, version, fetchData]);
 
   const onRefresh = React.useCallback(() => {
-    fetchData(establishment, version);
+    fetchData(establishment, version, month);
     fetchDailyRates();
-  }, [fetchData, establishment, version, fetchDailyRates]);
+  }, [fetchData, establishment, version, fetchDailyRates, month]);
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -892,8 +893,11 @@ function MonthView() {
   }, [fetchEstVersion]);
 
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if(establishment && version && estPrefill) {
+      setEstPrefill(false);
+      fetchData(establishment, version, month);
+    }
+  }, [establishment, version, estPrefill, fetchData, month]);
 
   React.useEffect(() => {
     const days = getDaysInMonth(month);
@@ -904,14 +908,17 @@ function MonthView() {
   }, [month, getDaysInMonth, getDateFromDay]);
 
   React.useEffect(() => {
+    fetchDailyRates();
+  }, [fetchDailyRates]);
+
+  React.useEffect(() => {
     establishmentService.search({ fields: ["name"] }).then(res => {
       if (res && res.data) {
         setEstablishmentList([...res.data]);
         setEstablishment(res.data[0].id);
       }
     });
-    fetchDailyRates();
-  }, [fetchDailyRates]);
+  }, []);
 
   const classes = useStyles();
   const renderTable = React.useMemo(() => {
