@@ -630,6 +630,26 @@ function MonthView() {
     [month, getDaysInMonth]
   );
 
+  const fetchDailyRates = React.useCallback(() => {
+    if (establishment) {
+      const _month = moment(month, MONTH_FORMAT);
+      const from = _month.startOf("month").format("YYYY-MM-DD");
+      const to = _month.endOf("month").format("YYYY-MM-DD");
+      const data = {
+        _domain: `self.establishment.id = ${establishment} and self.dayDate >= '${from}' and self.dayDate <= '${to}'`
+      };
+      occupationService
+        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
+        .then(res => {
+          if (res && res.data) {
+            setOccupationRates([...res.data]);
+          } else {
+            setOccupationRates([]);
+          }
+        });
+    }
+  }, [establishment, month]);
+
   const onPrevious = React.useCallback(() => {
     setMonth(
       moment(month, MONTH_FORMAT)
@@ -648,7 +668,8 @@ function MonthView() {
 
   const onRefresh = React.useCallback(() => {
     fetchData(establishment, version);
-  }, [fetchData, establishment, version]);
+    fetchDailyRates();
+  }, [fetchData, establishment, version, fetchDailyRates]);
 
   const onChange = React.useCallback(record => {
     setData(data => {
@@ -875,26 +896,6 @@ function MonthView() {
   }, [fetchData]);
 
   React.useEffect(() => {
-    if (establishment) {
-      const _month = moment(month, MONTH_FORMAT);
-      const from = _month.startOf("month").format("YYYY-MM-DD");
-      const to = _month.endOf("month").format("YYYY-MM-DD");
-      const data = {
-        _domain: `self.establishment.id = ${establishment} and self.dayDate >= '${from}' and self.dayDate <= '${to}'`
-      };
-      occupationService
-        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
-        .then(res => {
-          if (res && res.data) {
-            setOccupationRates([...res.data]);
-          } else {
-            setOccupationRates([]);
-          }
-        });
-    }
-  }, [month, establishment]);
-
-  React.useEffect(() => {
     const days = getDaysInMonth(month);
     const list = Array(days)
       .fill(0)
@@ -909,7 +910,8 @@ function MonthView() {
         setEstablishment(res.data[0].id);
       }
     });
-  }, []);
+    fetchDailyRates();
+  }, [fetchDailyRates]);
 
   const classes = useStyles();
   const renderTable = React.useMemo(() => {
