@@ -523,6 +523,24 @@ function TableView() {
       });
   }, []);
 
+  const fetchDailyRate = React.useCallback(() => {
+    if (establishment) {
+      const _date = moment(date, "DD-MM-YYYY").format("YYYY-MM-DD");
+      const data = {
+        _domain: `self.establishment.id = ${establishment} and self.dayDate = '${_date}'`
+      };
+      occupationService
+        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
+        .then(res => {
+          if (res && res.data && res.data[0]) {
+            setDailyRate(res.data[0].dailyRate || "");
+          } else {
+            setDailyRate("");
+          }
+        });
+    }
+  }, [date, establishment]);
+
   const onPrevious = React.useCallback(() => {
     const newDate = moment(date, "DD-MM-YYYY")
       .subtract(1, "days")
@@ -541,7 +559,8 @@ function TableView() {
 
   const onRefresh = React.useCallback(() => {
     fetchData(establishment, version, date);
-  }, [fetchData, establishment, version, date]);
+    fetchDailyRate();
+  }, [fetchData, establishment, version, date, fetchDailyRate]);
 
   const toggleDialog = React.useCallback(
     (shouldRefresh = false) => {
@@ -676,24 +695,6 @@ function TableView() {
   }, [fetchEstVersion, initialFetch]);
 
   React.useEffect(() => {
-    if (establishment) {
-      const _date = moment(date, "DD-MM-YYYY").format("YYYY-MM-DD");
-      const data = {
-        _domain: `self.establishment.id = ${establishment} and self.dayDate = '${_date}'`
-      };
-      occupationService
-        .search({ fields: ["dayDate", "dailyRate"], data, sortBy: ["dayDate"] })
-        .then(res => {
-          if (res && res.data && res.data[0]) {
-            setDailyRate(res.data[0].dailyRate || "");
-          } else {
-            setDailyRate("");
-          }
-        });
-    }
-  }, [date, establishment]);
-
-  React.useEffect(() => {
     setLoading(true);
     establishmentService
       .search({ fields: ["name"] })
@@ -747,7 +748,8 @@ function TableView() {
           });
       });
     }
-  }, [fetchData, date, initialFetch]);
+    fetchDailyRate();
+  }, [fetchData, date, initialFetch, fetchDailyRate]);
 
   return (
     <Table
