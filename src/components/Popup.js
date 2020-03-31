@@ -75,12 +75,12 @@ function PopupContent({
           <b>Info :</b> {text}
         </Typography>
       )}
-      {[undefined, null].includes(employeeWorkingNb) && (
+      {![undefined, null].includes(employeeWorkingNb) && (
         <Typography gutterBottom>
           <b>Effectif alloué :</b> {employeeWorkingNb}
         </Typography>
       )}
-      {[undefined, null].includes(employeeNbRequired) && (
+      {![undefined, null].includes(employeeNbRequired) && (
         <Typography gutterBottom>
           <b>Effectif requis :</b> {employeeNbRequired}
         </Typography>
